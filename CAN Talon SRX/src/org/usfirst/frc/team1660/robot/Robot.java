@@ -89,9 +89,9 @@ public void checkJoystick()
 {
 	 double threshold = 0.11;
 	 
-	 double x = driverStick.getRawAxis(4) ;
+	 double x = driverStick.getRawAxis(0) ;
 	 double moveValue = driverStick.getRawAxis(1);
-	 double rotateValue = driverStick.getRawAxis(0);
+	 double rotateValue = driverStick.getRawAxis(4);
 	
 	 //KILL GHOST MOTORS
 	if(moveValue > threshold*-1 && moveValue < threshold) {
