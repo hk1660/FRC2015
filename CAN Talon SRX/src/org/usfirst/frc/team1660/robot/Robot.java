@@ -21,21 +21,17 @@ public class Robot extends SampleRobot {
   public static CANTalon frontright;
   public static CANTalon backleft;
   public static CANTalon backright;
+  CANTalon eaterRight;
 
   //NAVX GYRO CODE
-  public static IMUAdvanced imu;      //IMUAdvanced imu;  // Alternatively, use IMUAdvanced for advanced features
+  public static IMUAdvanced imu;      //IMU imu;  // Alternatively, use IMUAdvanced for advanced features
   SerialPort serial_port;
   boolean first_iteration;
 
   public static RobotDrive hkDrive;
   public static Joystick driverStick;
+  public static Joystick manipStick;
   HKdriveClass HKdriveClassObject;
-  
-  
-  public void robotInit() {
-		hkDrive = new RobotDrive(frontleft, backleft, frontright, backright);
-	    driverStick = new Joystick(1);
-	}  
   
   
   public Robot() {
@@ -45,12 +41,31 @@ public class Robot extends SampleRobot {
       backleft = new CANTalon(2);
       backright = new CANTalon(3);
       frontright = new CANTalon(4);
+      eaterRight= new CANTalon(5);
+      
       
       //INITIALIZE GYRO SENSOR
       IMUAdvanced imu = HKdriveClass.imu;
   }
-  
 
+//////////////////////////////////////////
+//OFFICIAL FRC METHODS CALLED EACH MATCH//
+/////////////////////////////////////////
+  
+  
+  public void robotInit() {
+		hkDrive = new RobotDrive(frontleft, backleft, frontright, backright);
+	    driverStick = new Joystick(1);
+	    manipStick = new Joystick(2);
+	}  
+  
+  
+  public void autonomous(){
+	  
+	  
+  }
+  
+  
   public void operatorControl() {
     while (isOperatorControl() && isEnabled()) {
 
@@ -84,9 +99,12 @@ public class Robot extends SampleRobot {
 //CUSTOM METHODS CREATED BY HK1660//
 ////////////////////////////////////
 
+  
 //DRIVE WITH JOYSTICK -Matthew
 public void checkJoystick()
 {
+	
+	//DRIVETRAIN WITH JOYSTICKS
 	 double threshold = 0.11;
 	 
 	 double x = driverStick.getRawAxis(4) ;
@@ -111,7 +129,48 @@ public void checkJoystick()
 	HKdriveClassObject.zeroYaw();
 	//HKdriveClassObject.doMecanum(x,moveValue,rotateValue); 
 	
+	//EATING WITH JOYSTICKS
+	
+	if (manipStick.getRawButton(0)==true ){  //if holding the A button, 
+		
+		//then eater motor spin
+		
+		eaterRight.set(0.75);
+		
+	}
+	
+	else{
+		
+		eaterRight.set(0.0);
+	
+	}
+	
+	
+	//LIFTER WITH JOYSTICKS
+	
+	
+	
+	
   }
+
+
+//AUTO EAT METHOD
+
+
+
+
+//AUTO LIFT METHOD
+
+
+
+
+//AUTO DRIVE TO NEXT TOTE METHOD
+
+
+
+
+//AUTO DROP OFF A STACK METHOD
+
 
 
 
