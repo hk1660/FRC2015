@@ -42,7 +42,9 @@ public class Robot extends SampleRobot {
       backright = new CANTalon(3);
       frontright = new CANTalon(4);
       eaterRight= new CANTalon(5);
-      eaterLeft= new CANTalon(6)
+      eaterLeft= new CANTalon(6);
+      lifterRight= new CANTalon(7);
+      lifterLeft= new CANTalon(8);
       
       //INITIALIZE GYRO SENSOR
       IMUAdvanced imu = HKdriveClass.imu;
@@ -147,10 +149,9 @@ public void checkJoystick()
 	
 	
 	//LIFTER WITH JOYSTICKS
-	
-	
-	
-	
+	double axisValue = manipStick.getRawAxis(1);
+	lifterRight.set(axisValue);
+	lifterLeft.set(axisValue);
   }
 
 
