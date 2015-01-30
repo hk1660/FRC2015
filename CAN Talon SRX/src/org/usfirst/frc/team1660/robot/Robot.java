@@ -3,6 +3,7 @@ package org.usfirst.frc.team1660.robot;
 //IMPORTING USED CLASSES
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.CANTalon;
+import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.SampleRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.RobotDrive;
@@ -62,10 +63,17 @@ public class Robot extends SampleRobot {
 		hkDrive = new RobotDrive(frontleft, backleft, frontright, backright);
 	    driverStick = new Joystick(1);
 	    manipStick = new Joystick(2);
+	    HKdriveClassObject.zeroYaw();  //calibrate robot gyro to zero when facing away from driver (may need 20 seconds)
+
 	}  
   
   
   public void autonomous(){
+	  //3-TOTE-STACK-AUTO
+	  
+	  
+	  
+	  
 	  
 	  
   }
@@ -91,7 +99,8 @@ public class Robot extends SampleRobot {
 	    //Timer.delay(0.2);	
     
     }
-    
+  
+    //DISABLE ALL ACTUATORS (Motors, Pistons, etc.) AT END OF MATCH
     frontleft.disable();
     frontright.disable();
     backleft.disable();
@@ -105,52 +114,56 @@ public class Robot extends SampleRobot {
 ////////////////////////////////////
 
   
-//DRIVE WITH JOYSTICK -Matthew
+//MOVE WITH JOYSTICKS
 public void checkJoystick()
 {
 	
-	//DRIVETRAIN WITH JOYSTICKS
+	//DRIVETRAIN WITH JOYSTICKS -Matthew
 	 double threshold = 0.11;
 	 
 	 double x = driverStick.getRawAxis(0) ;
 	 double moveValue = driverStick.getRawAxis(1);
 	 double rotateValue = driverStick.getRawAxis(4);
 	
-	 //KILL GHOST MOTORS
+	 //KILL GHOST MOTORS -Matthew & Dianne
 	if(moveValue > threshold*-1 && moveValue < threshold) {
 		moveValue = 0;
 	}
 	if(rotateValue > threshold*-1 && rotateValue < threshold) {
 		rotateValue = 0;
 	}
-	
 	if(x > threshold*-1 && x < threshold) {
 		x = 0;
 	}
 	
-	//MECANUM
+	//MECANUM -Matthew
 	System.out.println("move: "+moveValue+" rotate: "+rotateValue);
 	hkDrive.mecanumDrive_Cartesian(rotateValue, moveValue, x, 0);
-	HKdriveClassObject.zeroYaw();
 	//HKdriveClassObject.doMecanum(x,moveValue,rotateValue); 
 	
-	//EATING WITH JOYSTICKS
-	if (manipStick.getRawButton(0)==true ){  //if holding the A button, 
-		
-		//then eater motor spin
-		
+	//EATING & SPITTING WITH JOYSTICKS -Adonis & Jatara
+	if (manipStick.getRawButton(0)==true ){  //if holding the A button 
+		//then eater motor spin	
 		eaterRight.set(0.75);
 		eaterLeft.set(0.75);
 	}
 	
+				//missing code for spitting
+	
 	else{
-		
 		eaterRight.set(0.0);
 		eaterLeft.set(0.0); 
 	}
+		
 	
 	
-	//LIFTER WITH JOYSTICKS
+	//BITING & UNBITING WITH JOYSTICKS
+	
+	
+	
+	
+	
+	//LIFTING & DROPPING WITH JOYSTICKS -Adonis & Jatara
 	double axisValue = manipStick.getRawAxis(1);
 	lifterRight.set(axisValue);
 	lifterLeft.set(axisValue);

@@ -263,17 +263,16 @@ public class HKdriveClass extends PIDSubsystem {
             
             mecanumDriveInvKinematics( velocities, wheelSpeeds );
             
-            byte syncGroup = (byte)0x80; //the number 128
             /*
             checkForRestartedMotor( FL, "Front Left" );
             checkForRestartedMotor( FR, "Front Right" );
             checkForRestartedMotor( BL, "Back Left" );
             checkForRestartedMotor( BR, "Back Right" );
             */
-            FL.set(maxOutputSpeed * wheelSpeeds[0] * -1, syncGroup );
-            FR.set(maxOutputSpeed * wheelSpeeds[1], syncGroup);
-            BL.set(maxOutputSpeed * wheelSpeeds[2] * -1, syncGroup);
-            BR.set(maxOutputSpeed * wheelSpeeds[3], syncGroup);
+            FL.set(maxOutputSpeed * wheelSpeeds[0] * -1);
+            FR.set(maxOutputSpeed * wheelSpeeds[1]     );
+            BL.set(maxOutputSpeed * wheelSpeeds[2] * -1);
+            BR.set(maxOutputSpeed * wheelSpeeds[3]     );
             
             //CANTalon.updateSyncGroup(syncGroup);
             
