@@ -23,6 +23,9 @@ public class Robot extends SampleRobot {
   public static CANTalon backright;
   CANTalon eaterRight;
   CANTalon eaterLeft;
+  Talon lifterRight;
+  Talon lifterLeft;
+  
   //NAVX GYRO CODE
   public static IMUAdvanced imu;      //IMU imu;  // Alternatively, use IMUAdvanced for advanced features
   SerialPort serial_port;
@@ -43,8 +46,8 @@ public class Robot extends SampleRobot {
       frontright = new CANTalon(4);
       eaterRight= new CANTalon(5);
       eaterLeft= new CANTalon(6);
-      lifterRight= new CANTalon(7);
-      lifterLeft= new CANTalon(8);
+      lifterRight= new Talon(7);
+      lifterLeft= new Talon(8);
       
       //INITIALIZE GYRO SENSOR
       IMUAdvanced imu = HKdriveClass.imu;
@@ -132,7 +135,6 @@ public void checkJoystick()
 	//HKdriveClassObject.doMecanum(x,moveValue,rotateValue); 
 	
 	//EATING WITH JOYSTICKS
-	
 	if (manipStick.getRawButton(0)==true ){  //if holding the A button, 
 		
 		//then eater motor spin
@@ -144,7 +146,7 @@ public void checkJoystick()
 	else{
 		
 		eaterRight.set(0.0);
-		eaterLeft.set(0.0);
+		eaterLeft.set(0.0); 
 	}
 	
 	
