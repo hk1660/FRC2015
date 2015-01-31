@@ -316,7 +316,7 @@ public void processGyro() {
 //AUTO EAT METHOD
 public void autoEat() {
 eaterRight.set(eatSpeed);
-eaterLeft.set(0.5);
+eaterLeft.set(eatSpeed);
 }
 
 //AUTO LIFT METHOD
