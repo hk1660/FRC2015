@@ -118,12 +118,12 @@ public class IMU extends SensorBase implements PIDSource, LiveWindowSendable, Ru
         user_yaw_offset = 0;
 
         // set the nav6 into the desired update mode
-	byte stream_command_buffer[] = new byte[256];
-	int packet_length = IMUProtocol.encodeStreamCommand( stream_command_buffer, update_type, update_rate_hz ); 
+        byte stream_command_buffer[] = new byte[256];
+        int packet_length = IMUProtocol.encodeStreamCommand( stream_command_buffer, update_type, update_rate_hz ); 
         try {
             serial_port.write( stream_command_buffer, packet_length );
         } catch (RuntimeException ex) {
-        	ex.printStackTrace();
+                ex.printStackTrace();
         }
     }
 
@@ -358,14 +358,14 @@ public class IMU extends SensorBase implements PIDSource, LiveWindowSendable, Ru
 
         byte[] stream_command = new byte[256];
         
-	int cmd_packet_length = IMUProtocol.encodeStreamCommand( stream_command, update_type, update_rate_hz ); 
+        int cmd_packet_length = IMUProtocol.encodeStreamCommand( stream_command, update_type, update_rate_hz ); 
         try {
             serial_port.reset();
             serial_port.write( stream_command, cmd_packet_length );
             serial_port.flush();
             last_stream_command_sent_timestamp = Timer.getFPGATimestamp();
         } catch (RuntimeException ex) {
-        	ex.printStackTrace();
+                ex.printStackTrace();
         }
         
         while (!stop) {
@@ -430,7 +430,7 @@ public class IMU extends SensorBase implements PIDSource, LiveWindowSendable, Ru
                             serial_port.write( stream_command, cmd_packet_length );
                             serial_port.flush();
                         } catch (RuntimeException ex2) {
-                        	ex2.printStackTrace();
+                                ex2.printStackTrace();
                         }                                                    
                     }
                     else {                        
