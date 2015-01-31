@@ -38,6 +38,15 @@ public class Robot extends SampleRobot {
   public static Joystick driverStick;
   public static Joystick manipStick;
  
+  
+  //ROBOT VARIABLES
+  double eatSpeed=0.75;
+  double spitSpeed=0.85;
+  
+  
+  
+  
+  
   public Robot() {
 	  try {
 	        serial_port = new SerialPort(57600,SerialPort.Port.kMXP);
@@ -169,14 +178,14 @@ public void checkEatingButtons(){
 	
 	if (manipStick.getRawButton(0)==true ){  //if holding the A button, 
 		//then eater motor spin	
-		eaterRight.set(0.75);
-		eaterLeft.set(0.75);
+		eaterRight.set(eatSpeed);
+		eaterLeft.set(eatSpeed);
 	}
 	
 	else if (manipStick.getRawButton(2)==true ){  //if holding the X button, 
 		//then eater motor spin backwards	
-		eaterRight.set(-0.75);
-		eaterLeft.set(-0.75);
+		eaterRight.set(-spitSpeed);
+		eaterLeft.set(-spitSpeed);
 	}
 	
 	
