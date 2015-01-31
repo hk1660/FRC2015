@@ -42,7 +42,7 @@ public class Robot extends SampleRobot {
   //ROBOT VARIABLES
   double eatSpeed=0.75;
   double spitSpeed=0.50;
-  
+  double liftSpeed=0.40; 
   
   
   
@@ -265,14 +265,16 @@ public void processGyro() {
 
 
 //AUTO EAT METHOD
-
-
-
+public void autoEat() {
+eaterRight.set(eatSpeed);
+eaterLeft.set(0.5);
+}
 
 //AUTO LIFT METHOD
-
-
-
+public void autoLift() {
+lifterRight.set(liftSpeed);
+lifterLeft.set(liftSpeed);
+}
 
 //AUTO DRIVE TO NEXT TOTE METHOD
 
