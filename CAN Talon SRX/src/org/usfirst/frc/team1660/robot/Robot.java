@@ -172,10 +172,12 @@ public void checkEatingButtons(){
 		//then eater motor spin
 		
 		eaterRight.set(0.75);
+		eaterLeft.set(0.75);
 	}
 	
 	else{
 		eaterRight.set(0.0);
+		eaterLeft.set(0.0);
 	}
 }
 
@@ -183,6 +185,7 @@ public void checkEatingButtons(){
 
 
 //LIFT WITH XBOX360 -Adonis & Jatara
+
 
 
 
