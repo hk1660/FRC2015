@@ -162,24 +162,33 @@ public void checkJoystick()
   }
 
 
-//EAT WITH XBOX360 -Adonis & Jatara
+//EAT and SPITING WITH XBOX360 -Adonis & Jatara
 
 public void checkEatingButtons(){
-	//EATING WITH JOYSTICKS
+	//EATING  &spiiting WITH JOYSTICKS
 	
 	if (manipStick.getRawButton(0)==true ){  //if holding the A button, 
-		
-		//then eater motor spin
-		
+		//then eater motor spin	
 		eaterRight.set(0.75);
 		eaterLeft.set(0.75);
 	}
+	
+	else if (manipStick.getRawButton(2)==true ){  //if holding the X button, 
+		//then eater motor spin backwards	
+		eaterRight.set(-0.75);
+		eaterLeft.set(-0.75);
+	}
+	
+	
 	
 	else{
 		eaterRight.set(0.0);
 		eaterLeft.set(0.0);
 	}
 }
+    
+
+
 
 //BITING WITH XBOX360
 
