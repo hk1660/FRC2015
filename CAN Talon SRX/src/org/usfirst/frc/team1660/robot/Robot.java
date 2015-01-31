@@ -45,6 +45,15 @@ public class Robot extends SampleRobot {
   public static Joystick driverStick;
   public static Joystick manipStick;
  
+  
+  //ROBOT VARIABLES
+  double eatSpeed=0.75;
+  double spitSpeed=0.50;
+  
+  
+  
+  
+  
   public Robot() {
 	  try {
 	        serial_port = new SerialPort(57600,SerialPort.Port.kMXP);
@@ -120,12 +129,14 @@ public class Robot extends SampleRobot {
   public void operatorControl() {
     while (isOperatorControl() && isEnabled()) {
 
+    	checkComp();
     	checkJoystick();	
     	processGyro();
-    	
-    	
+    	checkEatingButtons();
+    	checkLiftingButtons();
     	checkBiting();
-    	Timer.delay(0.01);  // Note that the CANTalon only receives updates every
+    	
+       	Timer.delay(0.01);  // Note that the CANTalon only receives updates every
                             // 10ms, so updating more quickly would not gain you anything.
     
     
@@ -179,24 +190,38 @@ public void checkJoystick()
   }
 
 
-//EAT WITH XBOX360 -Adonis & Jatara
+//EAT and SPITING WITH XBOX360 -Adonis & Jatara
 
 public void checkEatingButtons(){
-	//EATING WITH JOYSTICKS
+	//EATING  &spiiting WITH JOYSTICKS
 	
 	if (manipStick.getRawButton(0)==true ){  //if holding the A button, 
 		
-		//then eater motor spin
-		
+		//then eater motor spin		
 		eaterRight.set(0.75);
 		eaterLeft.set(0.75);
+
+		//then eater motor spin	
+		eaterRight.set(eatSpeed);
+		eaterLeft.set(eatSpeed);
 	}
+	
+	else if (manipStick.getRawButton(2)==true ){  //if holding the X button, 
+		//then eater motor spin backwards	
+		eaterRight.set(-spitSpeed);
+		eaterLeft.set(-spitSpeed);
+	}
+	
+	
 	
 	else{
 		eaterRight.set(0.0);
 		eaterLeft.set(0.0);
 	}
 }
+    
+
+
 
 //BITING WITH XBOX360 jamesey 
 
@@ -213,19 +238,32 @@ public void checkBiting(){
 	leftArmRelay.set(Relay.Value.kReverse);
 	rightArmRelay.set(Relay.Value.kReverse);
 	}
-
-	if (manipStick.getRawButton(1)==true ){  //if holding the B button	
-		 airComprs.set(Relay.Value.kForward);
-	}                     
 	
-	 if (manipStick.getRawButton(3)==true ){  //if holding the Y button, 
-			airComprs.set(Relay.Value.kReverse);
-	 }
 }
 
 
 
-//LIFT WITH XBOX360 -Adonis & Jatara
+//COMPRESSOR ON & OFF WITH JOYSTICKS
+public void checkComp(){
+if (manipStick.getRawButton(1)==true ){  //if holding the B button	
+	 airComprs.set(Relay.Value.kForward);
+}                     
+
+ if (manipStick.getRawButton(3)==true ){  //if holding the Y button, 
+		airComprs.set(Relay.Value.kReverse);
+ }
+}
+
+
+//LIFT WITH XBOX360 -Adonis & Jatara\
+
+public void checkLiftingButtons(){
+
+ double axisValue = manipStick.getRawAxis(1);
+ lifterRight.set(axisValue);
+ lifterLeft.set(axisValue);
+}
+
 
 
 
