@@ -122,40 +122,6 @@ public class Robot extends SampleRobot {
   }
   
   
-  public void processGyro() {
-	  
-	  
-	  
-	  
-	  
-	  boolean is_calibrating = imu.isCalibrating();
-      if ( first_iteration && !is_calibrating ) {
-          Timer.delay( 0.3 );
-          imu.zeroYaw();
-          first_iteration = false;
-      }
-      
-      // Update the dashboard with status and orientation
-      // data from the nav6 IMU
-      
-      SmartDashboard.putBoolean(  "IMU_Connected",        imu.isConnected());
-      SmartDashboard.putBoolean(  "IMU_IsCalibrating",    imu.isCalibrating());
-      SmartDashboard.putNumber(   "IMU_Yaw",              imu.getYaw());
-      SmartDashboard.putNumber(   "IMU_Pitch",            imu.getPitch());
-      SmartDashboard.putNumber(   "IMU_Roll",             imu.getRoll());
-      SmartDashboard.putNumber(   "IMU_CompassHeading",   imu.getCompassHeading());
-      SmartDashboard.putNumber(   "IMU_Update_Count",     imu.getUpdateCount());
-      SmartDashboard.putNumber(   "IMU_Byte_Count",       imu.getByteCount());
-
-      // If you are using the IMUAdvanced class, you can also access the following
-      // additional functions, at the expense of some extra processing
-      // that occurs on the CRio processor
-      
-      SmartDashboard.putNumber(   "IMU_Accel_X",          imu.getWorldLinearAccelX());
-      SmartDashboard.putNumber(   "IMU_Accel_Y",          imu.getWorldLinearAccelY());
-      SmartDashboard.putBoolean(  "IMU_IsMoving",         imu.isMoving());
-      SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());
-  }
   
 
 
@@ -164,11 +130,10 @@ public class Robot extends SampleRobot {
 ////////////////////////////////////
 
   
-//MOVE WITH JOYSTICKS
+//MOVE DRIVETRAIN WITH XBOX360 JOYSTICKS -Matthew
 public void checkJoystick()
 {
 	
-	//DRIVETRAIN WITH JOYSTICKS - Matthew
 	 double threshold = 0.11;
 	 
 	 double x = driverStick.getRawAxis(0) ;
@@ -193,7 +158,64 @@ public void checkJoystick()
 	hkDrive.mecanumDrive_Cartesian(rotateValue, moveValue, x, imu.getYaw());
 	//HKdriveClassObject.doMecanum(x,moveValue,rotateValue); 
 
+	
   }
+
+
+//EAT WITH XBOX360 -Adonis & Jatara
+
+
+
+//BITING WITH XBOX360
+
+
+//LIFT WITH XBOX360 -Adonis & Jatara
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//SENDS GYRO VALUES TO SMARTDASHBOARD
+public void processGyro() {	  
+	  
+	  boolean is_calibrating = imu.isCalibrating();
+    if ( first_iteration && !is_calibrating ) {
+        Timer.delay( 0.3 );
+        imu.zeroYaw();
+        first_iteration = false;
+    }
+    
+    // Update the dashboard with status and orientation
+    // data from the nav6 IMU
+    
+    SmartDashboard.putBoolean(  "IMU_Connected",        imu.isConnected());
+    SmartDashboard.putBoolean(  "IMU_IsCalibrating",    imu.isCalibrating());
+    SmartDashboard.putNumber(   "IMU_Yaw",              imu.getYaw());
+    SmartDashboard.putNumber(   "IMU_Pitch",            imu.getPitch());
+    SmartDashboard.putNumber(   "IMU_Roll",             imu.getRoll());
+    SmartDashboard.putNumber(   "IMU_CompassHeading",   imu.getCompassHeading());
+    SmartDashboard.putNumber(   "IMU_Update_Count",     imu.getUpdateCount());
+    SmartDashboard.putNumber(   "IMU_Byte_Count",       imu.getByteCount());
+
+    // If you are using the IMUAdvanced class, you can also access the following
+    // additional functions, at the expense of some extra processing
+    // that occurs on the CRio processor
+    
+    SmartDashboard.putNumber(   "IMU_Accel_X",          imu.getWorldLinearAccelX());
+    SmartDashboard.putNumber(   "IMU_Accel_Y",          imu.getWorldLinearAccelY());
+    SmartDashboard.putBoolean(  "IMU_IsMoving",         imu.isMoving());
+    SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());
+}
+
 
 
 //AUTO EAT METHOD
