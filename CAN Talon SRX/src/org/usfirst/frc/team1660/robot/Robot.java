@@ -41,7 +41,7 @@ public class Robot extends SampleRobot {
   
   //ROBOT VARIABLES
   double eatSpeed=0.75;
-  double spitSpeed=0.85;
+  double spitSpeed=0.50;
   
   
   
