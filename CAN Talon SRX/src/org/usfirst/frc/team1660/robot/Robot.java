@@ -24,10 +24,10 @@ public class Robot extends SampleRobot {
   public static CANTalon frontright;
   public static CANTalon backleft;
   public static CANTalon backright;
-  CANTalon eaterRight;
-  CANTalon eaterLeft;
-  Talon lifterRight;
-  Talon lifterLeft;
+  Talon eaterRight;
+  Talon eaterLeft;
+  CANTalon lifterRight;
+  CANTalon lifterLeft;
   
 //DECLARING RELAYS
   Relay leftArmRelay;
@@ -87,15 +87,16 @@ public class Robot extends SampleRobot {
       backleft = new CANTalon(2);
       backright = new CANTalon(3);
       frontright = new CANTalon(4);
-      eaterRight= new CANTalon(5);
-      eaterLeft= new CANTalon(6);
-      lifterRight= new Talon(7);
-      lifterLeft= new Talon(8);
+      lifterRight= new CANTalon(5);
+      lifterLeft= new CANTalon(6);
+      eaterRight= new Talon(1);
+      eaterLeft= new Talon(2);
+      
       
       //INITIALIZE RLAYS
-      leftArmRelay = new Relay(9);
-      rightArmRelay = new Relay(10);
-      airComprs = new Relay(11);
+      leftArmRelay = new Relay(1);
+      rightArmRelay = new Relay(2);
+      airComprs = new Relay(0);
 
       
   
