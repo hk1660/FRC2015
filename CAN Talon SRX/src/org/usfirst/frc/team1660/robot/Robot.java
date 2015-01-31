@@ -190,7 +190,7 @@ public void checkJoystick()
 	SmartDashboard.putNumber(  "move",        moveValue);
 	SmartDashboard.putNumber(  "rotate",        rotateValue);
 	//System.out.println("move: "+moveValue+" rotate: "+rotateValue);
-	hkDrive.mecanumDrive_Cartesian(rotateValue, moveValue, x, 0);
+	hkDrive.mecanumDrive_Cartesian(rotateValue, moveValue, x, imu.getYaw());
 	//HKdriveClassObject.doMecanum(x,moveValue,rotateValue); 
 
   }
