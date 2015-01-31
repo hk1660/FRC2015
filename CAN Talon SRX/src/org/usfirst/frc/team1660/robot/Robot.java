@@ -117,6 +117,11 @@ public class Robot extends SampleRobot {
 
     	checkJoystick();	
     	processGyro();
+    	checkEatingButtons();
+    	checkLiftingButtons();
+    	
+    	
+    	
     	Timer.delay(0.01);  // Note that the CANTalon only receives updates every
                             // 10ms, so updating more quickly would not gain you anything.
     
@@ -203,7 +208,9 @@ public void checkEatingButtons(){
 
 
 //LIFT WITH XBOX360 -Adonis & Jatara\
-{
+
+public void checkLiftingButtons(){
+
  double axisValue = manipStick.getRawAxis(1);
  lifterRight.set(axisValue);
  lifterLeft.set(axisValue);
