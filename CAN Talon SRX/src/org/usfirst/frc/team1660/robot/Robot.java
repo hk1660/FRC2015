@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
+import edu.wpi.first. wpilibj.Relay; 
 
 //import org.usfirst.frc.team1660.robot.HKdriveClass;
 //import com.kauailabs.nav6.frc.IMU; 
@@ -19,7 +19,7 @@ import com.kauailabs.nav6.frc.IMUAdvanced;
 
 public class Robot extends SampleRobot {
 	
-  //ASSIGNING MOTORS TO THE CANTalons
+  //DECLARING MOTORS
   public static CANTalon frontleft;
   public static CANTalon frontright;
   public static CANTalon backleft;
@@ -28,6 +28,13 @@ public class Robot extends SampleRobot {
   CANTalon eaterLeft;
   Talon lifterRight;
   Talon lifterLeft;
+  
+//DECLARING RELAYS
+  Relay leftArmRelay;
+  Relay rightArmRelay;
+  Relay airComprs;
+
+  
   
   //NAVX GYRO CODE
   IMUAdvanced imu;      //IMU imu;  // Alternatively, use IMUAdvanced for advanced features
@@ -66,7 +73,7 @@ public class Robot extends SampleRobot {
 	  
 	  
 	  
-	  //INITIALIZE CANTalonSRX's FOR DRIVETRAIN
+	  //INITIALIZE CANTalonSRX
       frontleft = new CANTalon(1);
       backleft = new CANTalon(2);
       backright = new CANTalon(3);
@@ -75,6 +82,13 @@ public class Robot extends SampleRobot {
       eaterLeft= new CANTalon(6);
       lifterRight= new Talon(7);
       lifterLeft= new Talon(8);
+      
+      //INITIALIZE RLAYS
+      leftArmRelay = new Relay(9);
+      rightArmRelay = new Relay(10);
+      airComprs = new Relay(11);
+
+      
   
 }
 
@@ -108,6 +122,9 @@ public class Robot extends SampleRobot {
 
     	checkJoystick();	
     	processGyro();
+    	
+    	
+    	checkBiting();
     	Timer.delay(0.01);  // Note that the CANTalon only receives updates every
                             // 10ms, so updating more quickly would not gain you anything.
     
@@ -181,7 +198,31 @@ public void checkEatingButtons(){
 	}
 }
 
-//BITING WITH XBOX360
+//BITING WITH XBOX360 jamesey 
+
+public void checkBiting(){
+	//Bit with LB button
+	
+	if (manipStick.getRawButton(4)==true ){  //if holding the LB button, 	        
+	 leftArmRelay.set(Relay.Value.kForward);                 
+		rightArmRelay.set(Relay.Value.kForward);
+	}
+	
+	if (manipStick.getRawButton(5)==true ){  //if holding the RB button, 
+		
+	leftArmRelay.set(Relay.Value.kReverse);
+	rightArmRelay.set(Relay.Value.kReverse);
+	}
+
+	if (manipStick.getRawButton(1)==true ){  //if holding the B button	
+		 airComprs.set(Relay.Value.kForward);
+	}                     
+	
+	 if (manipStick.getRawButton(3)==true ){  //if holding the Y button, 
+			airComprs.set(Relay.Value.kReverse);
+	 }
+}
+
 
 
 //LIFT WITH XBOX360 -Adonis & Jatara
