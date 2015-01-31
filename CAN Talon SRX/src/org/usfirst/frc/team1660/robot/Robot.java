@@ -184,7 +184,12 @@ public void checkEatingButtons(){
 //BITING WITH XBOX360
 
 
-//LIFT WITH XBOX360 -Adonis & Jatara
+//LIFT WITH XBOX360 -Adonis & Jatara\
+{
+ double axisValue = manipStick.getRawAxis(1);
+ lifterRight.set(axisValue);
+ lifterLeft.set(axisValue);
+}
 
 
 
