@@ -24,10 +24,10 @@ public class Robot extends SampleRobot {
   public static CANTalon frontright;
   public static CANTalon backleft;
   public static CANTalon backright;
-  //CANTalon eaterRight;
-  //CANTalon eaterLeft;
-  //Talon lifterRight;
-  //Talon lifterLeft;
+  CANTalon eaterRight;
+  CANTalon eaterLeft;
+  Talon lifterRight;
+  Talon lifterLeft;
   
   //NAVX GYRO CODE
   IMUAdvanced imu;      //IMU imu;  // Alternatively, use IMUAdvanced for advanced features
@@ -71,10 +71,10 @@ public class Robot extends SampleRobot {
       backleft = new CANTalon(2);
       backright = new CANTalon(3);
       frontright = new CANTalon(4);
-      //eaterRight= new CANTalon(5);
-      //eaterLeft= new CANTalon(6);
-      //lifterRight= new Talon(7);
-      //lifterLeft= new Talon(8);
+      eaterRight= new CANTalon(5);
+      eaterLeft= new CANTalon(6);
+      lifterRight= new Talon(7);
+      lifterLeft= new Talon(8);
   
 }
 
@@ -164,7 +164,20 @@ public void checkJoystick()
 
 //EAT WITH XBOX360 -Adonis & Jatara
 
-
+public void checkEatingButtons(){
+	//EATING WITH JOYSTICKS
+	
+	if (manipStick.getRawButton(0)==true ){  //if holding the A button, 
+		
+		//then eater motor spin
+		
+		eaterRight.set(0.75);
+	}
+	
+	else{
+		eaterRight.set(0.0);
+	}
+}
 
 //BITING WITH XBOX360
 
