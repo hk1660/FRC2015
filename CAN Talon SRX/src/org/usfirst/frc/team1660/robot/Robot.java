@@ -83,20 +83,20 @@ public class Robot extends SampleRobot {
 	  
 	  
 	  //INITIALIZE CANTalonSRX
-      frontleft = new CANTalon(1);
-      backleft = new CANTalon(2);
-      backright = new CANTalon(3);
-      frontright = new CANTalon(4);
+      frontleft  = new CANTalon(6);
+      backleft   = new CANTalon(4);
+      backright  = new CANTalon(3);
+      frontright = new CANTalon(2);
       lifterRight= new CANTalon(5);
-      lifterLeft= new CANTalon(6);
-      eaterRight= new Talon(1);
-      eaterLeft= new Talon(2);
+      lifterLeft= new CANTalon(1);
+      eaterRight = new Talon(1);
+      eaterLeft  = new Talon(2);
       
       
       //INITIALIZE RLAYS
-      leftArmRelay = new Relay(1);
+      leftArmRelay  = new Relay(1);
       rightArmRelay = new Relay(2);
-      airComprs = new Relay(0);
+      airComprs     = new Relay(0);
 
       
   
@@ -108,9 +108,9 @@ public class Robot extends SampleRobot {
   
   
   public void robotInit() {
-		hkDrive = new RobotDrive(frontleft, backleft, frontright, backright);
+		hkDrive     = new RobotDrive(frontleft, backleft, frontright, backright);
 	    driverStick = new Joystick(1);
-	    manipStick = new Joystick(2);
+	    manipStick  = new Joystick(2);
 	    //HKdriveClassObject.zeroYaw();  //calibrate robot gyro to zero when facing away from driver (may need 20 seconds)
 
 	}  
@@ -165,9 +165,9 @@ public void checkJoystick()
 	
 	 double threshold = 0.11;
 	 
-	 double x = driverStick.getRawAxis(0) ;
-	 double moveValue = driverStick.getRawAxis(1);
-	 double rotateValue = driverStick.getRawAxis(4);
+	 double x = driverStick.getRawAxis(0) ; //up and down on the left thumb stick?
+	 double moveValue = driverStick.getRawAxis(1);// right and left on left thumb stick?
+	 double rotateValue = driverStick.getRawAxis(4);// right and left on right thumb stick
 	
 	 //KILL GHOST MOTORS -Matthew & Dianne
 	if(moveValue > threshold*-1 && moveValue < threshold) {
@@ -186,9 +186,7 @@ public void checkJoystick()
 	//System.out.println("move: "+moveValue+" rotate: "+rotateValue);
 	hkDrive.mecanumDrive_Cartesian(rotateValue, moveValue, x, imu.getYaw());
 	//HKdriveClassObject.doMecanum(x,moveValue,rotateValue); 
-
-	
-  }
+}
 
 
 //EAT and SPITING WITH XBOX360 -Adonis & Jatara
@@ -196,21 +194,18 @@ public void checkJoystick()
 public void checkEatingButtons(){
 	//EATING  &spiiting WITH JOYSTICKS
 	
-	if (manipStick.getRawButton(0)==true ){  //if holding the A button, 
+	if (manipStick.getRawButton(6)==true ){  //if holding the A button, 
 		
-		//then eater motor spin		
-		eaterRight.set(0.75);
-		eaterLeft.set(0.75);
 
 		//then eater motor spin	
 		eaterRight.set(eatSpeed);
-		eaterLeft.set(eatSpeed);
+		eaterLeft.set(-eatSpeed);
 	}
 	
 	else if (manipStick.getRawButton(2)==true ){  //if holding the X button, 
 		//then eater motor spin backwards	
 		eaterRight.set(-spitSpeed);
-		eaterLeft.set(-spitSpeed);
+		eaterLeft.set(spitSpeed);
 	}
 	
 	
@@ -262,7 +257,7 @@ public void checkLiftingButtons(){
 
  double axisValue = manipStick.getRawAxis(1);
  lifterRight.set(axisValue);
- lifterLeft.set(axisValue);
+ lifterLeft.set(-axisValue);
 }
 
 
