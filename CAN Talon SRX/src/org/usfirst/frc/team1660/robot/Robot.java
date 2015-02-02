@@ -19,20 +19,22 @@ import com.kauailabs.nav6.frc.IMUAdvanced;
 
 public class Robot extends SampleRobot {
 	
-  //DECLARING JOYSTICK VARIABLES
+  //DECLARING JOYSTICK VARIABLES   jamesey
 	int FORWARDBACKWARD_AXIS = 1; //Left joystick up and down
 	int TURNSIDEWAYS_AXIS = 4; //Right joystick side to side
 	int LIFTDROP_AXIS = 1; //Left joystick up and down
 	
 	int EAT_BUTTON = 1; //A
-	//int HOOK_BUTTON = 2; //B
 	int SPIT_BUTTON = 3; //X
-	//int UNHOOK_BUTTON = 4; //Y
 	int OPEN_BUTTON = 5; //LB
 	int CLOSE_BUTTON = 6; //RB
 	int STRAFE_AXIS = 0; //Left joystick side to side
-	int COMPRESSER_ON_BUTTON = 9; //Start
-	int COMPRESSER_OFF_BUTTON= 10; //Back
+	int COMPRESSER_ON_BUTTON = 8; //Start
+	int COMPRESSER_OFF_BUTTON= 7; //Back
+	int CHANGE_BUTTON = 4; //Y
+	int DPAD_UP = 12;
+	int DPAD_DOWN =13;
+	
 	
   //DECLARING MOTORS
   public static CANTalon frontleft;
@@ -65,8 +67,10 @@ public class Robot extends SampleRobot {
   double eatSpeed=0.75;
   double spitSpeed=0.50;
   double liftSpeed=0.40; 
-   
-  boolean SINGLE_CONTROLLER = true; //start by using only 1 xbox controller, touch button to add manipStick
+  double axisValue =0.0;
+
+  
+  public boolean SINGLE_CONTROLLER =true; //start by using only 1 xbox controller, touch button to add manipStick
 		  
   
   
@@ -111,7 +115,7 @@ public class Robot extends SampleRobot {
       eaterLeft  = new Talon(2);
       
       
-      //INITIALIZE RLAYS
+      //INITIALIZE RLAYS   jamesey
       leftArmRelay  = new Relay(1);
       rightArmRelay = new Relay(2);
       airComprs     = new Relay(0);
@@ -131,6 +135,8 @@ public class Robot extends SampleRobot {
 	    manipStick  = new Joystick(2);
 	    //HKdriveClassObject.zeroYaw();  //calibrate robot gyro to zero when facing away from driver (may need 20 seconds)
 
+	    SINGLE_CONTROLLER = true; //start by using only 1 xbox controller, touch button to add manipStick
+
 	}  
   
   
@@ -148,6 +154,7 @@ public class Robot extends SampleRobot {
   public void operatorControl() {
     while (isOperatorControl() && isEnabled()) {
 
+    	checkSingle();
     	checkComp();
     	checkJoystick();	
     	processGyro();
@@ -201,7 +208,8 @@ public void checkJoystick()
 	//MECANUM -Matthew
 	SmartDashboard.putNumber(  "move",        moveValue);
 	SmartDashboard.putNumber(  "rotate",        rotateValue);
-	//System.out.println("move: "+moveValue+" rotate: "+rotateValue);
+	SmartDashboard.putNumber(  "Strafe",        x);
+
 	hkDrive.mecanumDrive_Cartesian(rotateValue, moveValue, x, imu.getYaw());
 	//HKdriveClassObject.doMecanum(x,moveValue,rotateValue); 
 }
@@ -214,40 +222,51 @@ public void checkEatingButtons(){
 			//manipStick Code
 			if (manipStick.getRawButton(EAT_BUTTON)==true ){  //if holding the A button, 
 				//then eater motor spin	
-				eaterRight.set(eatSpeed);
-				eaterLeft.set(-eatSpeed);
+				eaterRight.set(-eatSpeed);
+				eaterLeft.set(eatSpeed);
+				SmartDashboard.putString(  "Eater",        "Eating");
 			}
 			
 			else if (manipStick.getRawButton(SPIT_BUTTON)==true ){  //if holding the X button, 
 				//then eater motor spin backwards	
-				eaterRight.set(-spitSpeed);
-				eaterLeft.set(spitSpeed);
+				eaterRight.set(spitSpeed);
+				eaterLeft.set(-spitSpeed);
+				SmartDashboard.putString(  "Eater",        "Spitting");
+
 			}
 			
 			else{
 				eaterRight.set(0.0);
 				eaterLeft.set(0.0);
+				SmartDashboard.putString(  "Eater",        "Hungry");
+
 			}
 	}
 	
 	else{
 		
-			//driverStick
+			//driverStick  jamesey
 			if (driverStick.getRawButton(EAT_BUTTON)==true ){  //if holding the A button, 
 				//then eater motor spin	
-				eaterRight.set(eatSpeed);
-				eaterLeft.set(-eatSpeed);
+				eaterRight.set(-eatSpeed);
+				eaterLeft.set(eatSpeed);
+				SmartDashboard.putString(  "Eater",        "Eating");
+
 			}
 			
 			else if (driverStick.getRawButton(SPIT_BUTTON)==true ){  //if holding the X button, 
 				//then eater motor spin backwards	
-				eaterRight.set(-spitSpeed);
-				eaterLeft.set(spitSpeed);
+				eaterRight.set(spitSpeed);
+				eaterLeft.set(-spitSpeed);
+				SmartDashboard.putString(  "Eater",        "Spitting");
+
 			}
 			
 			else{
 				eaterRight.set(0.0);
 				eaterLeft.set(0.0);
+				SmartDashboard.putString(  "Eater",        "Hungry");
+
 			}
 		
 	}
@@ -274,7 +293,7 @@ public void checkBiting(){
 		}
 	}
 		
-	//driveStick
+	//driveStick jamesey
 	else{
  
 		if (driverStick.getRawButton(OPEN_BUTTON)==true ){  //if holding the LB button, 	        
@@ -299,20 +318,28 @@ public void checkComp(){
 	
 		if (manipStick.getRawButton(COMPRESSER_ON_BUTTON)==true ){  //if holding the start button	
 			 airComprs.set(Relay.Value.kForward);
+			SmartDashboard.putString(  "Compressor",        "ON");
+
 		}                     		
 		 if (manipStick.getRawButton(COMPRESSER_OFF_BUTTON)==true ){  //if holding the back button, 
 				airComprs.set(Relay.Value.kReverse);
-		}
+				SmartDashboard.putString(  "Compressor",        "OFF");
+
+		 }
  
 	// driverStick	 
 	 else{  
 		if (driverStick.getRawButton(COMPRESSER_ON_BUTTON)==true ){  //if holding the start button	
 			 airComprs.set(Relay.Value.kForward);
+			SmartDashboard.putString(  "Compressor",        "ON");
+
 		}                    
 		
 		if (driverStick.getRawButton(COMPRESSER_OFF_BUTTON)==true ){  //if holding the back button, 
 				airComprs.set(Relay.Value.kReverse);}
-		}
+				SmartDashboard.putString(  "Compressor",        "OFF");
+
+	 }
 	}
 }
 
@@ -320,31 +347,42 @@ public void checkComp(){
 //LIFT WITH XBOX360 -Adonis & Jatara\
 
 public void checkLiftingButtons(){
-
-	double axisValue;
 	
 	//manipStick
 	if(   SINGLE_CONTROLLER == false   ){
 		axisValue = manipStick.getRawAxis(LIFTDROP_AXIS); // left joystick up and down
 	}
      
-	//driversStick
+	
+	/*
+	//driversStick  jamesey
 	else{
-		axisValue = driverStick.getRawAxis(LIFTDROP_AXIS); // left joystick up and down
+		if(driverStick.getPOV(DPAD_UP)==0) {
+			axisValue = 1.0;
+		}	
+		if(driverStick.getPOV(DPAD_DOWN)==180) {
+			axisValue = -1.0;
+		}
 	}
 	
-	 lifterRight.set(axisValue);
-	 lifterLeft.set(-axisValue);
+	*/
 	
+	 lifterRight.set(axisValue*liftSpeed);
+	 lifterLeft.set(-axisValue*liftSpeed);
+	SmartDashboard.putNumber(  "Lifter",        axisValue);
+
 }
 
 
 
 //SWITCH OFF BETWEEN SIGUAL OR DUAL CONTROLLERS
  public void checkSingle(){
-	 	 
-	if (driverStick.getRawButton(CENTER_BUTTON)==true ){  //if holding the start button	
+
+	 SmartDashboard.putBoolean(  "Single Controller Mode",     SINGLE_CONTROLLER);
+
+	if (driverStick.getRawButton(CHANGE_BUTTON)==true ){  //if holding the Y button
 		SINGLE_CONTROLLER = false;
+
 	}                    
 	
 	
