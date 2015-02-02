@@ -19,6 +19,21 @@ import com.kauailabs.nav6.frc.IMUAdvanced;
 
 public class Robot extends SampleRobot {
 	
+  //DECLARING JOYSTICK VARIABLES
+	int FORWARDBACKWARD_AXIS = 1; //Left joystick up and down
+	int TURNSIDEWAYS_AXIS = 4; //Right joystick side to side
+	int LIFTDROP_AXIS = 1; //Left joystick up and down
+	
+	int EAT_BUTTON = 1; //A
+	//int HOOK_BUTTON = 2; //B
+	int SPIT_BUTTON = 3; //X
+	//int UNHOOK_BUTTON = 4; //Y
+	int OPEN_BUTTON = 5; //LB
+	int CLOSE_BUTTON = 6; //RB
+	int STRAFE_AXIS = 0; //Left joystick side to side
+	int COMPRESSER_ON_BUTTON = 9; //Start
+	int COMPRESSER_OFF_BUTTON= 10; //Back
+	
   //DECLARING MOTORS
   public static CANTalon frontleft;
   public static CANTalon frontright;
@@ -50,6 +65,9 @@ public class Robot extends SampleRobot {
   double eatSpeed=0.75;
   double spitSpeed=0.50;
   double liftSpeed=0.40; 
+   
+  boolean SINGLE_CONTROLLER = true; //start by using only 1 xbox controller, touch button to add manipStick
+		  
   
   
   
@@ -165,9 +183,9 @@ public void checkJoystick()
 	
 	 double threshold = 0.11;
 	 
-	 double x = driverStick.getRawAxis(0) ; //up and down on the left thumb stick?
-	 double moveValue = driverStick.getRawAxis(1);// right and left on left thumb stick?
-	 double rotateValue = driverStick.getRawAxis(4);// right and left on right thumb stick
+	 double x = driverStick.getRawAxis(STRAFE_AXIS) ; // right and left on the left thumb stick?
+	 double moveValue = driverStick.getRawAxis(FORWARDBACKWARD_AXIS);// up and down on left thumb stick?
+	 double rotateValue = driverStick.getRawAxis(TURNSIDEWAYS_AXIS);// right and left on right thumb stick
 	
 	 //KILL GHOST MOTORS -Matthew & Dianne
 	if(moveValue > threshold*-1 && moveValue < threshold) {
@@ -190,30 +208,51 @@ public void checkJoystick()
 
 
 //EAT and SPITING WITH XBOX360 -Adonis & Jatara
-
 public void checkEatingButtons(){
-	//EATING  &spiiting WITH JOYSTICKS
-	
-	if (manipStick.getRawButton(6)==true ){  //if holding the A button, 
-		
 
-		//then eater motor spin	
-		eaterRight.set(eatSpeed);
-		eaterLeft.set(-eatSpeed);
+	if(   SINGLE_CONTROLLER == false   ){
+			//manipStick Code
+			if (manipStick.getRawButton(EAT_BUTTON)==true ){  //if holding the A button, 
+				//then eater motor spin	
+				eaterRight.set(eatSpeed);
+				eaterLeft.set(-eatSpeed);
+			}
+			
+			else if (manipStick.getRawButton(SPIT_BUTTON)==true ){  //if holding the X button, 
+				//then eater motor spin backwards	
+				eaterRight.set(-spitSpeed);
+				eaterLeft.set(spitSpeed);
+			}
+			
+			else{
+				eaterRight.set(0.0);
+				eaterLeft.set(0.0);
+			}
 	}
-	
-	else if (manipStick.getRawButton(2)==true ){  //if holding the X button, 
-		//then eater motor spin backwards	
-		eaterRight.set(-spitSpeed);
-		eaterLeft.set(spitSpeed);
-	}
-	
-	
 	
 	else{
-		eaterRight.set(0.0);
-		eaterLeft.set(0.0);
+		
+			//driverStick
+			if (driverStick.getRawButton(EAT_BUTTON)==true ){  //if holding the A button, 
+				//then eater motor spin	
+				eaterRight.set(eatSpeed);
+				eaterLeft.set(-eatSpeed);
+			}
+			
+			else if (driverStick.getRawButton(SPIT_BUTTON)==true ){  //if holding the X button, 
+				//then eater motor spin backwards	
+				eaterRight.set(-spitSpeed);
+				eaterLeft.set(spitSpeed);
+			}
+			
+			else{
+				eaterRight.set(0.0);
+				eaterLeft.set(0.0);
+			}
+		
 	}
+	
+	
 }
     
 
@@ -222,32 +261,59 @@ public void checkEatingButtons(){
 //BITING WITH XBOX360 jamesey 
 
 public void checkBiting(){
-	//Bit with LB button
-	
-	if (manipStick.getRawButton(4)==true ){  //if holding the LB button, 	        
-	 leftArmRelay.set(Relay.Value.kForward);                 
-		rightArmRelay.set(Relay.Value.kForward);
-	}
-	
-	if (manipStick.getRawButton(5)==true ){  //if holding the RB button, 
+	//manipStick
+	if(   SINGLE_CONTROLLER == false   ){
+		if (manipStick.getRawButton(OPEN_BUTTON)==true ){  //if holding the LB button, 	        
+		 leftArmRelay.set(Relay.Value.kForward);                 
+			rightArmRelay.set(Relay.Value.kForward);
+		}
 		
-	leftArmRelay.set(Relay.Value.kReverse);
-	rightArmRelay.set(Relay.Value.kReverse);
+		if (manipStick.getRawButton(CLOSE_BUTTON)==true ){  //if holding the RB button, 
+		leftArmRelay.set(Relay.Value.kReverse);
+		rightArmRelay.set(Relay.Value.kReverse);
+		}
+	}
+		
+	//driveStick
+	else{
+ 
+		if (driverStick.getRawButton(OPEN_BUTTON)==true ){  //if holding the LB button, 	        
+		 leftArmRelay.set(Relay.Value.kForward);                 
+			rightArmRelay.set(Relay.Value.kForward);
+		}
+		
+		if (driverStick.getRawButton(CLOSE_BUTTON)==true ){  //if holding the RB button, 	
+		leftArmRelay.set(Relay.Value.kReverse);
+		rightArmRelay.set(Relay.Value.kReverse);
+		}
 	}
 	
 }
 
 
 
-//COMPRESSOR ON & OFF WITH JOYSTICKS
+//COMPRESSOR ON & OFF WITH JOYSTICKS jamesey
 public void checkComp(){
-if (manipStick.getRawButton(1)==true ){  //if holding the B button	
-	 airComprs.set(Relay.Value.kForward);
-}                     
-
- if (manipStick.getRawButton(3)==true ){  //if holding the Y button, 
-		airComprs.set(Relay.Value.kReverse);
- }
+	//manipStick
+	if(   SINGLE_CONTROLLER == false   ){
+	
+		if (manipStick.getRawButton(COMPRESSER_ON_BUTTON)==true ){  //if holding the start button	
+			 airComprs.set(Relay.Value.kForward);
+		}                     		
+		 if (manipStick.getRawButton(COMPRESSER_OFF_BUTTON)==true ){  //if holding the back button, 
+				airComprs.set(Relay.Value.kReverse);
+		}
+ 
+	// driverStick	 
+	 else{  
+		if (driverStick.getRawButton(COMPRESSER_ON_BUTTON)==true ){  //if holding the start button	
+			 airComprs.set(Relay.Value.kForward);
+		}                    
+		
+		if (driverStick.getRawButton(COMPRESSER_OFF_BUTTON)==true ){  //if holding the back button, 
+				airComprs.set(Relay.Value.kReverse);}
+		}
+	}
 }
 
 
@@ -255,12 +321,34 @@ if (manipStick.getRawButton(1)==true ){  //if holding the B button
 
 public void checkLiftingButtons(){
 
- double axisValue = manipStick.getRawAxis(1);
- lifterRight.set(axisValue);
- lifterLeft.set(-axisValue);
+	double axisValue;
+	
+	//manipStick
+	if(   SINGLE_CONTROLLER == false   ){
+		axisValue = manipStick.getRawAxis(LIFTDROP_AXIS); // left joystick up and down
+	}
+     
+	//driversStick
+	else{
+		axisValue = driverStick.getRawAxis(LIFTDROP_AXIS); // left joystick up and down
+	}
+	
+	 lifterRight.set(axisValue);
+	 lifterLeft.set(-axisValue);
+	
 }
 
 
+
+//SWITCH OFF BETWEEN SIGUAL OR DUAL CONTROLLERS
+ public void checkSingle(){
+	 	 
+	if (driverStick.getRawButton(CENTER_BUTTON)==true ){  //if holding the start button	
+		SINGLE_CONTROLLER = false;
+	}                    
+	
+	
+ }
 
 
 
@@ -309,17 +397,18 @@ public void processGyro() {
 
 
 
-//AUTO EAT METHOD
+//AUTO EAT METHOD -Adonis & Jatara
 public void autoEat() {
 eaterRight.set(eatSpeed);
-eaterLeft.set(eatSpeed);
+eaterLeft.set(-eatSpeed);
 }
 
-//AUTO LIFT METHOD
+//AUTO LIFT METHOD -Adonis & Jatara
 public void autoLift() {
 lifterRight.set(liftSpeed);
-lifterLeft.set(liftSpeed);
+lifterLeft.set(-liftSpeed);
 }
+
 
 //AUTO DRIVE TO NEXT TOTE METHOD
 
