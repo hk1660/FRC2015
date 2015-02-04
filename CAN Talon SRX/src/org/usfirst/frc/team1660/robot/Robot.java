@@ -10,7 +10,8 @@ import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first. wpilibj.Relay; 
+import edu.wpi.first.wpilibj.Relay; 
+import edu.wpi.first.wpilibj.DigitalInput;
 
 //import org.usfirst.frc.team1660.robot.HKdriveClass;
 //import com.kauailabs.nav6.frc.IMU; 
@@ -46,13 +47,19 @@ public class Robot extends SampleRobot {
   CANTalon lifterRight;
   CANTalon lifterLeft;
   
-//DECLARING RELAYS
+  //DECLARING RELAYS
   Relay leftArmRelay;
   Relay rightArmRelay;
   Relay airComprs;
 
+  //DECLARING SENSORS
+  DigitalInput toteLimit;
   
   
+  //DECLARING TIMERS
+  Timer rumbleTimer;
+  
+    
   //NAVX GYRO CODE
   IMUAdvanced imu;      //IMU imu;  // Alternatively, use IMUAdvanced for advanced features
   SerialPort serial_port;
@@ -61,15 +68,15 @@ public class Robot extends SampleRobot {
   public static RobotDrive hkDrive;
   public static Joystick driverStick;
   public static Joystick manipStick;
- 
+
   
   //ROBOT VARIABLES
   double eatSpeed=0.75;
   double spitSpeed=0.50;
   double liftSpeed=0.40; 
   double axisValue =0.0;
-
   
+  boolean rumbleToggle = false;
   public boolean SINGLE_CONTROLLER =true; //start by using only 1 xbox controller, touch button to add manipStick
 		  
   
@@ -77,6 +84,8 @@ public class Robot extends SampleRobot {
   
   
   public Robot() {
+	  
+	  //INITIALIZE GYRO
 	  try {
 	        serial_port = new SerialPort(57600,SerialPort.Port.kMXP);
 	                
@@ -99,10 +108,7 @@ public class Robot extends SampleRobot {
 	            LiveWindow.addSensor("IMU", "Gyro", imu);
 	        }
 	        first_iteration = true;
-	  
-	  
-	  
-	  
+	  	  
 	  
 	  //INITIALIZE CANTalonSRX
       frontleft  = new CANTalon(6);
@@ -115,13 +121,16 @@ public class Robot extends SampleRobot {
       eaterLeft  = new Talon(2);
       
       
-      //INITIALIZE RLAYS   jamesey
+      //INITIALIZE RELAYS   jamesey
       leftArmRelay  = new Relay(1);
       rightArmRelay = new Relay(2);
       airComprs     = new Relay(0);
 
+      //INITIALIZE SENSORS    
+      toteLimit = new DigitalInput (1);
       
   
+      
 }
 
 //////////////////////////////////////////
@@ -141,7 +150,7 @@ public class Robot extends SampleRobot {
   
   
   public void autonomous(){
-	  //3-TOTE-STACK-AUTO
+	  
 	  
 	  
 	  
@@ -161,6 +170,7 @@ public class Robot extends SampleRobot {
     	checkEatingButtons();
     	checkLiftingButtons();
     	checkBiting();
+    	checkRumble();
     	
        	Timer.delay(0.01);  // Note that the CANTalon only receives updates every
                             // 10ms, so updating more quickly would not gain you anything.
@@ -389,7 +399,29 @@ public void checkLiftingButtons(){
  }
 
 
+//RUMBLE WHEN CAPTURING A TOTE
+ public void checkRumble(){
 
+	 double rumbleLength = 5.0;  //seconds for rumble
+	 boolean gotTote = toteLimit.get(); //check if we have a tote
+	 SmartDashboard.putBoolean(  "Got Tote?",        gotTote);
+	 
+	 //do this first time
+	 if (gotTote == true && rumbleToggle == false){
+		 rumbleToggle = true;
+		 rumbleTimer.reset();
+	 }
+	 
+	 //do this a while longer
+	 else if(gotTote == true && rumbleToggle==true && rumbleTimer.get()<rumbleLength){
+		 manipStick.setRumble(Joystick.RumbleType.kRightRumble, 1);
+	 }	 
+	 
+	 else if(rumbleTimer.get()>rumbleLength*2){
+		 rumbleToggle = false;
+	 }
+
+ }
 
 
 
