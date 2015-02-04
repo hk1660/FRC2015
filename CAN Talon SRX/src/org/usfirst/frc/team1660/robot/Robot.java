@@ -53,7 +53,13 @@ public class Robot extends SampleRobot {
   Relay airComprs;
 
   //DECLARING SENSORS
-  DigitalInput toteLimit;
+  DigitalInput limitTote;
+  DigitalInput limitContainer;
+  DigitalInput limitTopR;
+  DigitalInput limitTopL;
+  DigitalInput limitBottomR;
+  DigitalInput limitBottomL;
+  
   
   
   //DECLARING TIMERS
@@ -127,9 +133,15 @@ public class Robot extends SampleRobot {
       airComprs     = new Relay(0);
 
       //INITIALIZE SENSORS    
-      toteLimit = new DigitalInput (1);
+      limitTote = new DigitalInput (1);
+      limitContainer = new DigitalInput (2);
+
+      limitBottomR = new DigitalInput (3);
+      limitTopR = new DigitalInput (4);
+      limitBottomL = new DigitalInput (5);
+      limitTopL = new DigitalInput (6);
+
       
-  
       
 }
 
@@ -403,7 +415,7 @@ public void checkLiftingButtons(){
  public void checkRumble(){
 
 	 double rumbleLength = 5.0;  //seconds for rumble
-	 boolean gotTote = toteLimit.get(); //check if we have a tote
+	 boolean gotTote = limitTote.get(); //check if we have a tote
 	 SmartDashboard.putBoolean(  "Got Tote?",        gotTote);
 	 
 	 //do this first time
@@ -478,6 +490,8 @@ public void autoLift() {
 lifterRight.set(liftSpeed);
 lifterLeft.set(-liftSpeed);
 }
+
+
 
 
 //AUTO DRIVE TO NEXT TOTE METHOD
