@@ -182,7 +182,7 @@ public class Robot extends SampleRobot {
     	checkEatingButtons();
     	checkLiftingButtons();
     	checkBiting();
-    	checkRumble();
+    	//checkRumble();
     	
        	Timer.delay(0.01);  // Note that the CANTalon only receives updates every
                             // 10ms, so updating more quickly would not gain you anything.
@@ -374,8 +374,53 @@ public void checkLiftingButtons(){
 	if(   SINGLE_CONTROLLER == false   ){
 		axisValue = manipStick.getRawAxis(LIFTDROP_AXIS); // left joystick up and down
 	}
-     
 	
+	boolean hitTL = limitTopL.get();
+	boolean hitBL = limitBottomL.get();
+	boolean hitTR = limitTopR.get();
+	boolean hitBR = limitBottomR.get();
+	
+	//only do if ls open TopR
+	if(hitTR==false && axisValue < 0 )
+	{
+		lifterRight.set(0);
+	
+	}
+	
+	//only do if ls open BottomR
+	else if(hitBR==false && axisValue > 0 )
+	{
+		lifterRight.set(0);
+	}
+	
+	else
+	{	
+		lifterRight.set(axisValue*liftSpeed);
+    }
+	
+	
+	//only do if ls open TopL
+	if(hitTL==false && axisValue > 0)
+	{
+		lifterLeft.set(0);
+	}
+	
+	//only do if ls open BottomL
+	else if(hitBL==false && axisValue < 0)
+	{
+		lifterLeft.set(0);
+	}
+	else
+	{
+		lifterLeft.set(-axisValue*liftSpeed);
+	}
+	
+	SmartDashboard.putNumber(  "Lifter",        axisValue);
+	SmartDashboard.putBoolean(  "limitBottomR",       hitBR);
+	SmartDashboard.putBoolean(  "limitTopR",        hitTR);
+	SmartDashboard.putBoolean(  "limitBottomL",       hitBL);
+	SmartDashboard.putBoolean(  "limitTopL",        hitTL);	
+
 	/*
 	//driversStick  jamesey
 	else{
@@ -389,10 +434,7 @@ public void checkLiftingButtons(){
 	
 	*/
 	
-	 lifterRight.set(axisValue*liftSpeed);
-	 lifterLeft.set(-axisValue*liftSpeed);
-	SmartDashboard.putNumber(  "Lifter",        axisValue);
-
+	
 }
 
 
@@ -409,7 +451,7 @@ public void checkLiftingButtons(){
 	
 	
  }
-
+/*
 
 //RUMBLE WHEN CAPTURING A TOTE
  public void checkRumble(){
@@ -434,7 +476,7 @@ public void checkLiftingButtons(){
 	 }
 
  }
-
+*/
 
 
 
