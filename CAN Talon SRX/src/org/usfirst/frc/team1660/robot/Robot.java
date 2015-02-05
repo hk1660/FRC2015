@@ -240,9 +240,14 @@ public void checkJoystick()
 //EAT and SPITING WITH XBOX360 -Adonis & Jatara
 public void checkEatingButtons(){
 
-	if(   SINGLE_CONTROLLER == false   ){
+	boolean hitT = limitTote.get();
+	boolean hitC = limitContainer.get();
+	
+	if(   SINGLE_CONTROLLER == false)
+	{
 			//manipStick Code
-			if (manipStick.getRawButton(EAT_BUTTON)==true ){  //if holding the A button, 
+			if (manipStick.getRawButton(EAT_BUTTON)==true )
+			{  //if holding the A button, 
 				//then eater motor spin	
 				eaterRight.set(-eatSpeed);
 				eaterLeft.set(eatSpeed);
@@ -264,6 +269,25 @@ public void checkEatingButtons(){
 
 			}
 	}
+	
+	
+	
+	
+	
+	
+	
+	else if (hitT == false )
+	{
+		eaterRight.set(0.0);
+		eaterLeft.set(0.0);
+	}
+	
+	
+	
+	
+	
+	
+	
 	
 	else{
 		
