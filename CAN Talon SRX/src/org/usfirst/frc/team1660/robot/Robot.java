@@ -243,12 +243,13 @@ public void checkEatingButtons(){
 	boolean hitT = limitTote.get();
 	boolean hitC = limitContainer.get();
 	
-	if(   SINGLE_CONTROLLER == false)
+	if(   SINGLE_CONTROLLER == false      )
 	{
 			//manipStick Code
-			if (manipStick.getRawButton(EAT_BUTTON)==true )
+			if (manipStick.getRawButton(EAT_BUTTON)==true && hitC == false || hitT == false )
 			{  //if holding the A button, 
 				//then eater motor spin	
+				
 				eaterRight.set(-eatSpeed);
 				eaterLeft.set(eatSpeed);
 				SmartDashboard.putString(  "Eater",        "Eating");
@@ -270,19 +271,7 @@ public void checkEatingButtons(){
 			}
 	}
 	
-	
-	
-	
-	
-	
-	
-	else if (hitT == false )
-	{
-		eaterRight.set(0.0);
-		eaterLeft.set(0.0);
-	}
-	
-	
+
 	
 	
 	
