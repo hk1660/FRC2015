@@ -249,7 +249,6 @@ public void checkEatingButtons(){
 			if (manipStick.getRawButton(EAT_BUTTON)==true && hitC == false || hitT == false )
 			{  //if holding the A button, 
 				//then eater motor spin	
-				
 				eaterRight.set(-eatSpeed);
 				eaterLeft.set(eatSpeed);
 				SmartDashboard.putString(  "Eater",        "Eating");
@@ -550,18 +549,21 @@ lifterLeft.set(-liftSpeed);
 
 
 //AUTO DRIVE TO NEXT TOTE METHOD
+public void autoDrive(double driveSpeed) {
+frontleft.set(1);
+backleft.set(1);;
+backright.set(1);
+frontright.set(1);
+}
 
 
 
 
 //AUTO DROP OFF A STACK METHOD
-
-
-
-
-
-
-
+public void autoDrop(double liftSpeed) {
+lifterRight.set(-liftSpeed);
+lifterLeft.set(liftSpeed);
+}
 
 }
 
