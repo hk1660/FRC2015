@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Relay; 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Encoder;
 
 //import org.usfirst.frc.team1660.robot.HKdriveClass;
 //import com.kauailabs.nav6.frc.IMU; 
@@ -59,6 +60,11 @@ public class Robot extends SampleRobot {
   DigitalInput limitTopL;
   DigitalInput limitBottomR;
   DigitalInput limitBottomL;
+  int encRChannelA = 7;
+  int encRChannelB = 8;
+  int encRChannelX = 9;
+  Encoder encR;
+  
   
   
   
@@ -140,6 +146,7 @@ public class Robot extends SampleRobot {
       limitTopR = new DigitalInput (4);
       limitBottomL = new DigitalInput (5);
       limitTopL = new DigitalInput (6);
+      encR = new Encoder(encRChannelA, encRChannelB, encRChannelX);
 
       
       
@@ -565,7 +572,23 @@ lifterRight.set(-liftSpeed);
 lifterLeft.set(liftSpeed);
 }
 
+
+//enccheck
+public void checkEncoder() {
+	int currentEncValue = encR.getRaw();
+	
+	SmartDashboard.putNumber("encoderRValue", currentEncValue);
 }
+
+
+
+
+
+
+
+
+}
+
 
 
 
