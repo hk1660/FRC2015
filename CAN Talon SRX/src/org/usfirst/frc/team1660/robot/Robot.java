@@ -1,6 +1,7 @@
 package org.usfirst.frc.team1660.robot;
 
 //IMPORTING USED CLASSES
+import edu.wpi.first.wpilibj.CANTalon.ControlMode;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.Talon;
@@ -13,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Relay; 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
+
 
 //import org.usfirst.frc.team1660.robot.HKdriveClass;
 //import com.kauailabs.nav6.frc.IMU; 
@@ -86,8 +88,7 @@ public class Robot extends SampleRobot {
   double eatSpeed=0.75;
   double spitSpeed=0.50;
   double liftSpeed=0.40; 
-  double axisValue =0.0;
-  
+
   boolean rumbleToggle = false;
   public boolean SINGLE_CONTROLLER =true; //start by using only 1 xbox controller, touch button to add manipStick
 		  
@@ -128,9 +129,14 @@ public class Robot extends SampleRobot {
       backright  = new CANTalon(3);
       frontright = new CANTalon(2);
       lifterRight= new CANTalon(5);
+      lifterRight.changeControlMode(ControlMode.Position);
+      lifterRight.setPosition(0);
       lifterLeft= new CANTalon(1);
+      lifterLeft.changeControlMode(ControlMode.Position);
+      lifterLeft.setPosition(0);
       eaterRight = new Talon(1);
       eaterLeft  = new Talon(2);
+      
       
       
       //INITIALIZE RELAYS   jamesey
@@ -239,7 +245,7 @@ public void checkJoystick()
 	SmartDashboard.putNumber(  "rotate",        rotateValue);
 	SmartDashboard.putNumber(  "Strafe",        x);
 
-	hkDrive.mecanumDrive_Cartesian(rotateValue, moveValue, x, imu.getYaw());
+	hkDrive.mecanumDrive_Cartesian(moveValue, rotateValue, x, imu.getYaw());
 	//HKdriveClassObject.doMecanum(x,moveValue,rotateValue); 
 }
 
@@ -388,59 +394,12 @@ public void checkComp(){
 //LIFT WITH XBOX360 -Adonis & Jatara\
 
 public void checkLiftingButtons(){
-	
 	//manipStick
+	double axisValue = 0;
 	if(   SINGLE_CONTROLLER == false   ){
 		axisValue = manipStick.getRawAxis(LIFTDROP_AXIS); // left joystick up and down
 	}
 	
-	boolean hitTL = limitTopL.get();
-	boolean hitBL = limitBottomL.get();
-	boolean hitTR = limitTopR.get();
-	boolean hitBR = limitBottomR.get();
-	
-	//only do if ls open TopR
-	if(hitTR==false && axisValue < 0 )
-	{
-		lifterRight.set(0);
-	
-	}
-	
-	//only do if ls open BottomR
-	else if(hitBR==false && axisValue > 0 )
-	{
-		lifterRight.set(0);
-	}
-	
-	else
-	{	
-		lifterRight.set(axisValue*liftSpeed);
-    }
-	
-	
-	//only do if ls open TopL
-	if(hitTL==false && axisValue > 0)
-	{
-		lifterLeft.set(0);
-	}
-	
-	//only do if ls open BottomL
-	else if(hitBL==false && axisValue < 0)
-	{
-		lifterLeft.set(0);
-	}
-	else
-	{
-		lifterLeft.set(-axisValue*liftSpeed);
-	}
-	
-	SmartDashboard.putNumber(  "Lifter",        axisValue);
-	SmartDashboard.putBoolean(  "limitBottomR",       hitBR);
-	SmartDashboard.putBoolean(  "limitTopR",        hitTR);
-	SmartDashboard.putBoolean(  "limitBottomL",       hitBL);
-	SmartDashboard.putBoolean(  "limitTopL",        hitTL);	
-
-	/*
 	//driversStick  jamesey
 	else{
 		if(driverStick.getPOV(DPAD_UP)==0) {
@@ -451,8 +410,55 @@ public void checkLiftingButtons(){
 		}
 	}
 	
-	*/
 	
+	
+	
+	boolean hitTL = limitTopL.get();
+	boolean hitBL = limitBottomL.get();
+	boolean hitTR = limitTopR.get();
+	boolean hitBR = limitBottomR.get();
+	
+	//only do if ls open TopR
+	if(hitTR==false && axisValue < 0 )
+	{
+	
+	}
+	
+	//only do if ls open BottomR
+	else if(hitBR==false && axisValue > 0 )
+	{
+		
+	}
+	
+	else
+	{	
+		lifterRight.set(lifterRight.getPosition() + axisValue * 100);
+    }
+	
+	
+	//only do if ls open TopL
+	if(hitTL==false && axisValue > 0)
+	{
+		
+	}
+	
+	//only do if ls open BottomL
+	else if(hitBL==false && axisValue < 0)
+	{
+		
+	}
+	else
+	{
+		lifterLeft.set(lifterLeft.getPosition() + axisValue * 100);
+	}
+	
+	SmartDashboard.putNumber(  "Lifter",        axisValue);
+	SmartDashboard.putBoolean(  "limitBottomR",       hitBR);
+	SmartDashboard.putBoolean(  "limitTopR",        hitTR);
+	SmartDashboard.putBoolean(  "limitBottomL",       hitBL);
+	SmartDashboard.putBoolean(  "limitTopL",        hitTL);	
+
+
 	
 }
 
@@ -467,6 +473,7 @@ public void checkLiftingButtons(){
 		SINGLE_CONTROLLER = false;
 
 	}                    
+
 	
 	
  }
@@ -536,6 +543,7 @@ public void processGyro() {
     SmartDashboard.putNumber(   "IMU_Accel_Y",          imu.getWorldLinearAccelY());
     SmartDashboard.putBoolean(  "IMU_IsMoving",         imu.isMoving());
     SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());
+    
 }
 
 
@@ -558,12 +566,10 @@ lifterLeft.set(-liftSpeed);
 //AUTO DRIVE TO NEXT TOTE METHOD
 public void autoDrive(double driveSpeed) {
 frontleft.set(1);
-backleft.set(1);;
+backleft.set(1);
 backright.set(1);
 frontright.set(1);
 }
-
-
 
 
 //AUTO DROP OFF A STACK METHOD
