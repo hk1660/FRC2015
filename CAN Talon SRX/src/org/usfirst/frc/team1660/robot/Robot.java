@@ -10,10 +10,13 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Relay; 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
+
+
 
 
 //import org.usfirst.frc.team1660.robot.HKdriveClass;
@@ -47,7 +50,7 @@ public class Robot extends SampleRobot {
   public static CANTalon backright;
   Talon eaterRight;
   Talon eaterLeft;
-  CANTalon lifterRight;
+  CANTalon lifterFollower;
   CANTalon lifterLeft;
   
   //DECLARING RELAYS
@@ -62,11 +65,7 @@ public class Robot extends SampleRobot {
   DigitalInput limitTopL;
   DigitalInput limitBottomR;
   DigitalInput limitBottomL;
-  int encRChannelA = 7;
-  int encRChannelB = 8;
-  int encRChannelX = 9;
-  Encoder encR;
-  
+
   
   
   
@@ -90,9 +89,11 @@ public class Robot extends SampleRobot {
   double liftSpeed=0.40; 
 
   boolean rumbleToggle = false;
-  public boolean SINGLE_CONTROLLER =true; //start by using only 1 xbox controller, touch button to add manipStick
-		  
+  public boolean SINGLE_CONTROLLER = false; //start by using only 1 xbox controller, touch button to add manipStick
   
+  //SmartDashboard objects
+  SendableChooser startingPosition;
+  SendableChooser strategy;
   
   
   
@@ -128,12 +129,12 @@ public class Robot extends SampleRobot {
       backleft   = new CANTalon(4);
       backright  = new CANTalon(3);
       frontright = new CANTalon(2);
-      lifterRight= new CANTalon(5);
-      lifterRight.changeControlMode(ControlMode.Position);
-      lifterRight.setPosition(0);
+      lifterFollower= new CANTalon(5);
+      //lifterFollower.changeControlMode(ControlMode.Follower);
+      //lifterFollower.set(1);
+      //lifterFollower.reverseOutput(true);
       lifterLeft= new CANTalon(1);
-      lifterLeft.changeControlMode(ControlMode.Position);
-      lifterLeft.setPosition(0);
+      //lifterLeft.changeControlMode(ControlMode.PercentVbus);
       eaterRight = new Talon(1);
       eaterLeft  = new Talon(2);
       
@@ -152,7 +153,7 @@ public class Robot extends SampleRobot {
       limitTopR = new DigitalInput (4);
       limitBottomL = new DigitalInput (5);
       limitTopL = new DigitalInput (6);
-      encR = new Encoder(encRChannelA, encRChannelB, encRChannelX);
+     
 
       
       
@@ -163,14 +164,30 @@ public class Robot extends SampleRobot {
 /////////////////////////////////////////
   
   
+  
+  
+  
+  
   public void robotInit() {
 		hkDrive     = new RobotDrive(frontleft, backleft, frontright, backright);
 	    driverStick = new Joystick(1);
 	    manipStick  = new Joystick(2);
 	    //HKdriveClassObject.zeroYaw();  //calibrate robot gyro to zero when facing away from driver (may need 20 seconds)
-
+       
 	    SINGLE_CONTROLLER = true; //start by using only 1 xbox controller, touch button to add manipStick
+        startingPosition = new SendableChooser();
+        startingPosition.addDefault("Left", new Integer(1));
+        startingPosition.addObject("Middle", new Integer(2));
+        startingPosition.addObject("Right", new Integer(3));
+        SmartDashboard.putData("startingPosition", startingPosition);
+        
+        strategy = new SendableChooser();
+        strategy.addDefault("Strategy 1", new Integer(1));
+        strategy.addObject("Strategy 2", new Integer(2));
+        strategy.addObject("Strategy 3", new Integer(3));
+        SmartDashboard.putData("strategy", strategy);
 
+        
 	}  
   
   
@@ -245,7 +262,7 @@ public void checkJoystick()
 	SmartDashboard.putNumber(  "rotate",        rotateValue);
 	SmartDashboard.putNumber(  "Strafe",        x);
 
-	hkDrive.mecanumDrive_Cartesian(moveValue, rotateValue, x, imu.getYaw());
+	hkDrive.mecanumDrive_Cartesian(moveValue, rotateValue, x, 0);
 	//HKdriveClassObject.doMecanum(x,moveValue,rotateValue); 
 }
 
@@ -393,14 +410,24 @@ public void checkComp(){
 
 //LIFT WITH XBOX360 -Adonis & Jatara\
 
+public void liftingSettings(double liftingSpeed) {
+	lifterLeft.set(liftingSpeed);
+	lifterFollower.set(liftingSpeed);
+	
+}
+
 public void checkLiftingButtons(){
 	//manipStick
+	SmartDashboard.putNumber("encoderLValue", lifterLeft.getPosition());
+	SmartDashboard.putNumber("encoderRValue", lifterFollower.getPosition());
+	
 	double axisValue = 0;
 	if(   SINGLE_CONTROLLER == false   ){
 		axisValue = manipStick.getRawAxis(LIFTDROP_AXIS); // left joystick up and down
 	}
 	
-	//driversStick  jamesey
+	/**
+	 //driversStick  jamesey
 	else{
 		if(driverStick.getPOV(DPAD_UP)==0) {
 			axisValue = 1.0;
@@ -410,7 +437,7 @@ public void checkLiftingButtons(){
 		}
 	}
 	
-	
+	**/
 	
 	
 	boolean hitTL = limitTopL.get();
@@ -421,35 +448,35 @@ public void checkLiftingButtons(){
 	//only do if ls open TopR
 	if(hitTR==false && axisValue < 0 )
 	{
-	
+		lifterLeft.set(0);
+		lifterFollower.set(0);
 	}
 	
 	//only do if ls open BottomR
 	else if(hitBR==false && axisValue > 0 )
 	{
-		
+		lifterLeft.set(0);
+		lifterFollower.set(0);
 	}
-	
-	else
-	{	
-		lifterRight.set(lifterRight.getPosition() + axisValue * 100);
-    }
 	
 	
 	//only do if ls open TopL
 	if(hitTL==false && axisValue > 0)
 	{
-		
+		lifterLeft.set(0);
+		lifterFollower.set(0);
 	}
 	
 	//only do if ls open BottomL
 	else if(hitBL==false && axisValue < 0)
 	{
-		
+		lifterLeft.set(0);
+		lifterFollower.set(0);
 	}
 	else
 	{
-		lifterLeft.set(lifterLeft.getPosition() + axisValue * 100);
+		lifterLeft.set(axisValue*-.85);
+		lifterFollower.set(axisValue);
 	}
 	
 	SmartDashboard.putNumber(  "Lifter",        axisValue);
@@ -542,7 +569,7 @@ public void processGyro() {
     SmartDashboard.putNumber(   "IMU_Accel_X",          imu.getWorldLinearAccelX());
     SmartDashboard.putNumber(   "IMU_Accel_Y",          imu.getWorldLinearAccelY());
     SmartDashboard.putBoolean(  "IMU_IsMoving",         imu.isMoving());
-    SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC());
+    SmartDashboard.putNumber(   "IMU_Temp_C",           imu.getTempC()); 
     
 }
 
@@ -556,7 +583,6 @@ eaterLeft.set(-eatSpeed);
 
 //AUTO LIFT METHOD -Adonis & Jatara
 public void autoLift() {
-lifterRight.set(liftSpeed);
 lifterLeft.set(-liftSpeed);
 }
 
@@ -571,20 +597,11 @@ backright.set(1);
 frontright.set(1);
 }
 
-
 //AUTO DROP OFF A STACK METHOD
 public void autoDrop(double liftSpeed) {
-lifterRight.set(-liftSpeed);
-lifterLeft.set(liftSpeed);
+ liftingSettings(liftSpeed);
 }
 
-
-//enccheck
-public void checkEncoder() {
-	int currentEncValue = encR.getRaw();
-	
-	SmartDashboard.putNumber("encoderRValue", currentEncValue);
-}
 
 
 
