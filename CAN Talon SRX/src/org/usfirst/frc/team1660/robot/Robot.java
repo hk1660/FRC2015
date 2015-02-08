@@ -448,30 +448,27 @@ public void checkLiftingButtons(){
 	//only do if ls open TopR
 	if(hitTR==false && axisValue < 0 )
 	{
-		lifterLeft.set(0);
-		lifterFollower.set(0);
+		liftingSettings(0);
+	
 	}
 	
 	//only do if ls open BottomR
 	else if(hitBR==false && axisValue > 0 )
 	{
-		lifterLeft.set(0);
-		lifterFollower.set(0);
+		liftingSettings(0);
 	}
 	
 	
 	//only do if ls open TopL
 	if(hitTL==false && axisValue > 0)
 	{
-		lifterLeft.set(0);
-		lifterFollower.set(0);
+		liftingSettings(0);
 	}
 	
 	//only do if ls open BottomL
 	else if(hitBL==false && axisValue < 0)
 	{
-		lifterLeft.set(0);
-		lifterFollower.set(0);
+		liftingSettings(0);
 	}
 	else
 	{
