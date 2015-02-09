@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+
 //import edu.wpi.first.wpilibj.CANTalon.ControlMode;
 
 //import org.usfirst.frc.team1660.robot.HKdriveClass;
@@ -390,6 +391,17 @@ public void liftingSettings(double liftingSpeed) {
 }
 
 public void checkLiftingButtons(){
+	
+	//encoder setup
+    lifterLeft.changeControlMode(CANTalon.ControlMode.Position);
+	lifterFollower.changeControlMode(CANTalon.ControlMode.Position);
+	
+	lifterLeft.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+	lifterFollower.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+	
+	lifterLeft.setPID(1.0, 0.0, 0.0);
+	lifterFollower.setPID(1.0, 0.0, 0.0);
+
 	//Encoder values
 	SmartDashboard.putNumber("encoderLValue", lifterLeft.getPosition());
 	SmartDashboard.putNumber("encoderRValue", lifterFollower.getPosition());
@@ -434,7 +446,7 @@ public void checkLiftingButtons(){
 		lifterLeft.set(0);
 		lifterFollower.set(0);
 		//RESET THE RIGHT ENCODER HERE
-		
+		lifterFollower.setPosition(0);
 		
 		
 	}
@@ -448,14 +460,35 @@ public void checkLiftingButtons(){
 		lifterLeft.set(0);
 		lifterFollower.set(0);
 		//RESET THE LEFT ENCODER HERE
-		
+		lifterLeft.setPosition(0);
 		
 		
 	}
 	
 	else{
-		lifterLeft.set(axisValue*-.85);
-		lifterFollower.set(axisValue);
+		//lifterLeft.set(axisValue*-1);
+		//lifterFollower.set(axisValue);
+		int middle = 12*1481;
+		int high = 24*1481;
+		
+		
+		
+		
+		if(manipStick.getPOV(DPAD) == 90) {
+			lifterLeft.set(middle);
+			lifterFollower.set(middle);
+		}
+		
+		if(manipStick.getPOV(DPAD) == 0) {
+			lifterLeft.set(0);
+			lifterFollower.set(0);
+		}
+		
+		if(manipStick.getPOV(DPAD) == 180) {
+			lifterLeft.set(high);
+			lifterFollower.set(high);
+		}
+		
 	}
 	
 	SmartDashboard.putNumber(  	"LifterSpeed",      axisValue);
