@@ -35,8 +35,7 @@ public class Robot extends SampleRobot {
 	int COMPRESSER_ON_BUTTON = 8; //Start
 	int COMPRESSER_OFF_BUTTON= 7; //Back
 	int CHANGE_BUTTON = 4; //Y
-	int DPAD_UP = 12;
-	int DPAD_DOWN =13;
+	int DPAD = 0; //POV
 	
 	
   //DECLARING MOTORS
@@ -405,18 +404,19 @@ public void checkLiftingButtons(){
 	if(   SINGLE_CONTROLLER == false   ){
 		axisValue = manipStick.getRawAxis(LIFTDROP_AXIS); // left joystick up and down
 	}
-	
-	/**
 	 //driversStick  jamesey
 	else{
-		if(driverStick.getPOV(DPAD_UP)==0) {
-			axisValue = 1.0;
+
+		SmartDashboard.putNumber("DPAD UP", driverStick.getPOV(DPAD));
+		SmartDashboard.putNumber("DPAD DOWN", driverStick.getPOV(DPAD));
+
+		if(driverStick.getPOV(DPAD)==0) {
+			axisValue = liftSpeed;
 		}	
-		if(driverStick.getPOV(DPAD_DOWN)==180) {
-			axisValue = -1.0;
+		if(driverStick.getPOV(DPAD)==180) {
+			axisValue = -liftSpeed;
 		}
 	}
-	**/
 	
 	boolean hitTL = limitTopL.get();
 	boolean hitBL = limitBottomL.get();
@@ -483,20 +483,22 @@ public void checkLiftingButtons(){
 	 double rumbleLength = 2.0;  //seconds for rumble
 	 boolean gotTote = limitTote.get(); //check if we have a tote
 	 SmartDashboard.putBoolean(  "Got Tote?",        gotTote);
+	 SmartDashboard.putBoolean("rumbleToggle", rumbleToggle);
+	 SmartDashboard.putNumber("rumbleTimer", rumbleTimer.get());
 	 
 	 //do this first time
 	 if (gotTote == true && rumbleToggle == false){
 		 rumbleToggle = true;
 		 rumbleTimer.reset();
 	 }
-	 
 	 //do this a while longer
 	 else if(gotTote == true && rumbleToggle==true && rumbleTimer.get()<rumbleLength){
-		 //manipStick.setRumble(Joystick.RumbleType.kRightRumble, 1);
+	 manipStick.setRumble(Joystick.RumbleType.kLeftRumble,1);	 
 	 }	 
-	 
 	 else if(rumbleTimer.get()>rumbleLength*2){
 		 rumbleToggle = false;
+	 }
+	 else{
 	 }
 
  }
