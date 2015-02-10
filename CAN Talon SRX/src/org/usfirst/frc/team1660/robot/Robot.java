@@ -81,6 +81,12 @@ public class Robot extends SampleRobot {
   double eatSpeed=0.75;
   double spitSpeed=0.50;
   double liftSpeed=0.40; 
+  
+  //sTARTING PID FOR LIFTER
+  double P = 0.05;
+  double I = 0.00;
+  double D = 0.00;
+	
 
   boolean rumbleToggle = false;
   public boolean SINGLE_CONTROLLER = false; //start by using only 1 xbox controller, touch button to add manipStick
@@ -205,7 +211,7 @@ public class Robot extends SampleRobot {
     	checkEatingButtons();
        	checkTusks();
     	checkLiftingButtons();
-    	checkRumble();
+    	//checkRumble();
     	
        	Timer.delay(0.01);  // Note that the CANTalon only receives updates every
                             // 10ms, so updating more quickly would not gain you anything.
@@ -399,8 +405,17 @@ public void checkLiftingButtons(){
 	lifterLeft.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 	lifterFollower.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 	
-	lifterLeft.setPID(1.0, 0.0, 0.0);
-	lifterFollower.setPID(1.0, 0.0, 0.0);
+	
+	
+	if(manipStick.getRawButton(2)==true){
+		
+	P = P + 0.01;
+	SmartDashboard.putNumber("PValue", P);
+	}
+	
+	
+	//lifterLeft.setPID(P,I,D);
+	lifterFollower.setPID(P,I,D);
 
 	//Encoder values
 	SmartDashboard.putNumber("encoderLValue", lifterLeft.getPosition());
@@ -413,14 +428,15 @@ public void checkLiftingButtons(){
 	double axisValue = 0;
 	
 	//manipStick
-	if(   SINGLE_CONTROLLER == false   ){
+	
+	/**
+	 	if(   SINGLE_CONTROLLER == false   ){
 		axisValue = manipStick.getRawAxis(LIFTDROP_AXIS); // left joystick up and down
 	}
+	
+
 	 //driversStick  jamesey
 	else{
-
-		SmartDashboard.putNumber("DPAD UP", driverStick.getPOV(DPAD));
-		SmartDashboard.putNumber("DPAD DOWN", driverStick.getPOV(DPAD));
 
 		if(driverStick.getPOV(DPAD)==0) {
 			axisValue = liftSpeed;
@@ -429,36 +445,36 @@ public void checkLiftingButtons(){
 			axisValue = -liftSpeed;
 		}
 	}
-	
+	**/
 	boolean hitTL = limitTopL.get();
 	boolean hitBL = limitBottomL.get();
 	boolean hitTR = limitTopR.get();
 	boolean hitBR = limitBottomR.get();
 	
 	//limit switch stops
-	if(hitTR==false && axisValue < 0 ){
+	if(hitTR==false){
 		//liftingSettings(0);		
-		lifterLeft.set(0);
-		lifterFollower.set(0);
+		//lifterLeft.set(0);
+		//lifterFollower.set(0);
 	}
-	else if(hitBR==false && axisValue > 0 ){
+	else if(hitBR==false){
 		//liftingSettings(0);		
-		lifterLeft.set(0);
-		lifterFollower.set(0);
+		//lifterLeft.set(0);
+		//lifterFollower.set(0);
 		//RESET THE RIGHT ENCODER HERE
 		lifterFollower.setPosition(0);
 		
 		
 	}
-	if(hitTL==false && axisValue > 0){
+	if(hitTL==false){
 		//liftingSettings(0);		
-		lifterLeft.set(0);
-		lifterFollower.set(0);
+		//lifterLeft.set(0);
+		//lifterFollower.set(0);
 	}
-	else if(hitBL==false && axisValue < 0) {
+	else if(hitBL==false) {
 		//liftingSettings(0);		
-		lifterLeft.set(0);
-		lifterFollower.set(0);
+		//lifterLeft.set(0);
+		//lifterFollower.set(0);
 		//RESET THE LEFT ENCODER HERE
 		lifterLeft.setPosition(0);
 		
@@ -468,26 +484,35 @@ public void checkLiftingButtons(){
 	else{
 		//lifterLeft.set(axisValue*-1);
 		//lifterFollower.set(axisValue);
-		int middle = 12*1481;
+		int middle =12*1481;
 		int high = 24*1481;
 		
+		SmartDashboard.putNumber("DPAD Value", manipStick.getPOV(DPAD));
 		
-		
-		
-		if(manipStick.getPOV(DPAD) == 90) {
-			lifterLeft.set(middle);
-			lifterFollower.set(middle);
-		}
-		
-		if(manipStick.getPOV(DPAD) == 0) {
-			lifterLeft.set(0);
-			lifterFollower.set(0);
+		if(manipStick.getPOV(DPAD) == 270) {
+			//lifterLeft.set(middle);
+			lifterFollower.set(-middle);
+			SmartDashboard.putString("Lifter Status", "Middle");
 		}
 		
 		if(manipStick.getPOV(DPAD) == 180) {
-			lifterLeft.set(high);
-			lifterFollower.set(high);
+			//lifterLeft.set(0);
+			lifterFollower.set(0);
+			SmartDashboard.putString("Lifter Status", "Down");
 		}
+		
+		if(manipStick.getPOV(DPAD) == 0) {
+			//lifterLeft.set(high);
+			lifterFollower.set(-high);
+			SmartDashboard.putString("Lifter Status", "High");
+		}
+		
+		if(manipStick.getRawButton(4) == true) {
+			lifterLeft.disable();
+			lifterFollower.disable();
+		}
+		
+		
 		
 	}
 	
@@ -516,8 +541,8 @@ public void checkLiftingButtons(){
 	 double rumbleLength = 2.0;  //seconds for rumble
 	 boolean gotTote = limitTote.get(); //check if we have a tote
 	 SmartDashboard.putBoolean(  "Got Tote?",        gotTote);
-	 SmartDashboard.putBoolean("rumbleToggle", rumbleToggle);
-	 SmartDashboard.putNumber("rumbleTimer", rumbleTimer.get());
+	 //SmartDashboard.putBoolean("rumbleToggle", rumbleToggle);
+	 //SmartDashboard.putNumber("rumbleTimer", rumbleTimer.get());
 	 
 	 //do this first time
 	 if (gotTote == true && rumbleToggle == false){
