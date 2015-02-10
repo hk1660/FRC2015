@@ -490,19 +490,19 @@ public void checkLiftingButtons(){
 		SmartDashboard.putNumber("DPAD Value", manipStick.getPOV(DPAD));
 		
 		if(manipStick.getPOV(DPAD) == 270) {
-			//lifterLeft.set(middle);
+			lifterLeft.set(middle);
 			lifterFollower.set(-middle);
 			SmartDashboard.putString("Lifter Status", "Middle");
 		}
 		
 		if(manipStick.getPOV(DPAD) == 180) {
-			//lifterLeft.set(0);
+			lifterLeft.set(0);
 			lifterFollower.set(0);
 			SmartDashboard.putString("Lifter Status", "Down");
 		}
 		
 		if(manipStick.getPOV(DPAD) == 0) {
-			//lifterLeft.set(high);
+		    lifterLeft.set(high);
 			lifterFollower.set(-high);
 			SmartDashboard.putString("Lifter Status", "High");
 		}
