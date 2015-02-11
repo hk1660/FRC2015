@@ -418,25 +418,15 @@ public void checkComp(){
 
 //LIFT WITH XBOX360 -Adonis & Jatara\
 public void checkLiftingButtons(){
-	//PID values
-	double LP = 0.600;
-	double LI = 0.0;
-	double LD = 0.0;
-	double FP = 0.600;
-	double FI = 0.0;
-	double FD = 0.0;
-	
-	
-	
+
 	
 	//encoders setup
     lifterLeft.changeControlMode(CANTalon.ControlMode.Position);
 	lifterFollower.changeControlMode(CANTalon.ControlMode.Position);
 	lifterLeft.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 	lifterFollower.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-	lifterLeft.setPID(LP, LI, LD);
-	lifterFollower.setPID(FP, FI, FD);
-
+	lifterFollower.reverseSensor(true);
+	
 	//Encoder values
 	SmartDashboard.putNumber("encLposition", lifterLeft.getEncPosition());
 	SmartDashboard.putNumber("encRposition", lifterFollower.getEncPosition());
@@ -454,49 +444,37 @@ public void checkLiftingButtons(){
 	SmartDashboard.putBoolean(  "limitBottomL",     hitBL);
 	SmartDashboard.putBoolean(  "limitTopL",        hitTL);	
 	
-	//limit switch stops
-	if(hitTR==false){
-		//liftingSettings(0);		
-		//lifterLeft.set(0);
-		//lifterFollower.set(0);
-	}
-	else if(hitBR==false){
-		//liftingSettings(0);		
-		//lifterLeft.set(0);
-		//lifterFollower.set(0);
-		//RESET THE RIGHT ENCODER HERE
-		lifterFollower.setPosition(0);
-		lifterFollower.set(0);
-		lifterLeft.set(0);
-	}
-	if(hitTL==false){
-		//liftingSettings(0);		
-		//lifterLeft.set(0);
-		//lifterFollower.set(0);
-	}
-	else if(hitBL==false) {
-		//liftingSettings(0);		
-		//lifterLeft.set(0);
-		//lifterFollower.set(0);
-		//RESET THE LEFT ENCODER HERE
-		lifterLeft.setPosition(0);
-		lifterFollower.set(0);
-		lifterLeft.set(0);
-	}
-	if(lifterLeft.getEncPosition() - lifterFollower.getEncPosition()  > 700) {
-		//lifterFollower.setPID(FP*0.6, FI, FD);
+	//SET PID VALUES
+	double LP = 0.600;
+	double LI = 0.0;
+	double LD = 0.0;
+	double FP = 0.600;
+	double FI = 0.0;
+	double FD = 0.0;
+
+	lifterLeft.setPID(LP, LI, LD);
+	lifterFollower.setPID(FP, FI, FD);
+	
+	//CHANGE PID VALUES OF MOTORS IF OUT OF SYNC -Matthew
+	double syncPfactor = 0.6;
+	double syncIfactor = 1.0;
+	double syncDfactor = 1.0;
+	int errorThresh = 700; //about a half inch?
+	
+	if(lifterLeft.getEncPosition() - lifterFollower.getEncPosition()  > errorThresh) {
+		lifterFollower.setPID(FP*syncPfactor, FI*syncIfactor, FD*syncDfactor);
 	}
 	
-	else if(lifterFollower.getEncPosition() - lifterLeft.getEncPosition()  > 700) {
-		//lifterLeft.setPID(LP*0.6, LI, LD);
+	else if(lifterFollower.getEncPosition() - lifterLeft.getEncPosition()  > errorThresh) {
+		lifterLeft.setPID(LP*syncPfactor, LI*syncIfactor, LD*syncDfactor);
 	}
 	else {
 		lifterFollower.setPID(FP, FI, FD);
 		lifterLeft.setPID(LP, LI, LD);
 	}
-	/*else{
-		
-		//MANUAL CONTROL OF POSITION
+	
+	
+	/*	//MANUAL CONTROL OF POSITION
 		SmartDashboard.putNumber("LifterAxis", manipStick.getRawAxis(1));
 		
 		if(manipStick.getRawAxis(1)==0.0){
@@ -519,28 +497,52 @@ public void checkLiftingButtons(){
 		//DPAD POSITION CONTROL
 		SmartDashboard.putNumber("DPAD Value", manipStick.getPOV(DPAD));
 		
-		if(manipStick.getPOV(DPAD) == 270) {
-			lifterLeft.set(middle);
-			lifterFollower.set(-middle);
-			SmartDashboard.putString("Lifter Status", "Middle");
-			manualLiftCount = 0;
-		}
-		
-		if(manipStick.getPOV(DPAD) == 180) {
+		if(manipStick.getPOV(DPAD) == 180) {  //go to 0" from bottom
 			lifterLeft.set(low);
-			lifterFollower.set(-low);
+			lifterFollower.set(low);
 			SmartDashboard.putString("Lifter Status", "Down");
 			manualLiftCount = 0;
 		}
-		
-		if(manipStick.getPOV(DPAD) == 0) {
+		if(manipStick.getPOV(DPAD) == 270) { //go to 12" from bottom
+			lifterLeft.set(middle);
+			lifterFollower.set(middle);
+			SmartDashboard.putString("Lifter Status", "Middle");
+			manualLiftCount = 0;
+		}		
+		if(manipStick.getPOV(DPAD) == 0) { //go to 26" from bottom
 		    lifterLeft.set(high);
-			lifterFollower.set(-high);
+			lifterFollower.set(high);
 			SmartDashboard.putString("Lifter Status", "High");
 			manualLiftCount = 0;
 		}
+		if(manipStick.getRawAxis(5) < -0.1){ //go down until you hit limit switch
+			lifterLeft.set(-1481*40);
+			lifterFollower.set(-1481*40);
+		}
 		
-		
+		//Limit Switch commands
+		if(hitBR==false){		//RESET THE RIGHT ENCODER 
+			lifterFollower.setPosition(0);
+			lifterFollower.set(0);
+			lifterLeft.set(0);
+		}
+		if(hitBL==false) {		//RESET THE LEFT ENCODER
+			lifterLeft.setPosition(0);
+			lifterFollower.set(0);
+			lifterLeft.set(0);
+		}
+		if(hitTR==false){
+			//liftingSettings(0);		
+			//lifterLeft.set(0);
+			//lifterFollower.set(0);
+		}
+		if(hitTL==false){
+			//liftingSettings(0);		
+			//lifterLeft.set(0);
+			//lifterFollower.set(0);
+		}
+	
+		//Disable/Enable Buttons
 		if(manipStick.getRawAxis(3)>0.1) { //right trigger disables the motors
 			lifterLeft.disable();
 			lifterFollower.disable();
@@ -549,9 +551,11 @@ public void checkLiftingButtons(){
 			lifterLeft.enableControl();
 			lifterFollower.enableControl();	
 		}
-	}
+
+		SmartDashboard.putNumber(  	"manualLiftCount",      manualLiftCount);
+}
 	
-	//SmartDashboard.putNumber(  	"manualLiftRate",      manualLiftRate);
+
 	
 
 
