@@ -210,6 +210,7 @@ public class Robot extends SampleRobot {
   
   
   public void operatorControl() {
+	  
     while (isOperatorControl() && isEnabled()) {
 
     	checkSingle();
@@ -220,7 +221,7 @@ public class Robot extends SampleRobot {
     	checkEatingButtons();
        	checkTusks();
     	checkLiftingButtons();
-    	adjustLiftingPID();
+    	//adjustLiftingPID();
     	//checkRumble();
     	
        	Timer.delay(0.01);  // Note that the CANTalon only receives updates every
@@ -234,6 +235,7 @@ public class Robot extends SampleRobot {
     frontright.disable();
     backleft.disable();
     backright.disable();
+    
   }
   
   
@@ -416,14 +418,24 @@ public void checkComp(){
 
 //LIFT WITH XBOX360 -Adonis & Jatara\
 public void checkLiftingButtons(){
+	//PID values
+	double LP = 0.600;
+	double LI = 0.0;
+	double LD = 0.0;
+	double FP = 0.600;
+	double FI = 0.0;
+	double FD = 0.0;
+	
+	
+	
 	
 	//encoders setup
     lifterLeft.changeControlMode(CANTalon.ControlMode.Position);
 	lifterFollower.changeControlMode(CANTalon.ControlMode.Position);
 	lifterLeft.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 	lifterFollower.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-	lifterLeft.setPID(P,I,D);
-	lifterFollower.setPID(P,I,D);
+	lifterLeft.setPID(LP, LI, LD);
+	lifterFollower.setPID(FP, FI, FD);
 
 	//Encoder values
 	SmartDashboard.putNumber("encLposition", lifterLeft.getEncPosition());
@@ -437,6 +449,10 @@ public void checkLiftingButtons(){
 	boolean hitBL = limitBottomL.get();
 	boolean hitTR = limitTopR.get();
 	boolean hitBR = limitBottomR.get();
+	SmartDashboard.putBoolean(  "limitBottomR",     hitBR);
+	SmartDashboard.putBoolean(  "limitTopR",        hitTR);
+	SmartDashboard.putBoolean(  "limitBottomL",     hitBL);
+	SmartDashboard.putBoolean(  "limitTopL",        hitTL);	
 	
 	//limit switch stops
 	if(hitTR==false){
@@ -467,8 +483,18 @@ public void checkLiftingButtons(){
 		lifterFollower.set(0);
 		lifterLeft.set(0);
 	}
+	if(lifterLeft.getEncPosition() - lifterFollower.getEncPosition()  > 700) {
+		//lifterFollower.setPID(FP*0.6, FI, FD);
+	}
 	
-	else{
+	else if(lifterFollower.getEncPosition() - lifterLeft.getEncPosition()  > 700) {
+		//lifterLeft.setPID(LP*0.6, LI, LD);
+	}
+	else {
+		lifterFollower.setPID(FP, FI, FD);
+		lifterLeft.setPID(LP, LI, LD);
+	}
+	/*else{
 		
 		//MANUAL CONTROL OF POSITION
 		SmartDashboard.putNumber("LifterAxis", manipStick.getRawAxis(1));
@@ -488,7 +514,7 @@ public void checkLiftingButtons(){
 			manualLiftRate = manipStick.getRawAxis(1)*1481/4;
 			lifterLeft.set(currentL - manualLiftRate*manualLiftCount);			
 			lifterFollower.set(-currentR + manualLiftRate*manualLiftCount);
-		}
+		}*/
 
 		//DPAD POSITION CONTROL
 		SmartDashboard.putNumber("DPAD Value", manipStick.getPOV(DPAD));
@@ -502,7 +528,7 @@ public void checkLiftingButtons(){
 		
 		if(manipStick.getPOV(DPAD) == 180) {
 			lifterLeft.set(low);
-			lifterFollower.set(low);
+			lifterFollower.set(-low);
 			SmartDashboard.putString("Lifter Status", "Down");
 			manualLiftCount = 0;
 		}
@@ -525,16 +551,12 @@ public void checkLiftingButtons(){
 		}
 	}
 	
-	SmartDashboard.putNumber(  	"manualLiftRate",      manualLiftRate);
-	SmartDashboard.putBoolean(  "limitBottomR",     hitBR);
-	SmartDashboard.putBoolean(  "limitTopR",        hitTR);
-	SmartDashboard.putBoolean(  "limitBottomL",     hitBL);
-	SmartDashboard.putBoolean(  "limitTopL",        hitTL);	
-}
+	//SmartDashboard.putNumber(  	"manualLiftRate",      manualLiftRate);
+	
 
 
 //MANUALLY ADJUST VALUES OF P, I, D
-public void adjustLiftingPID(){
+/*public void adjustLiftingPID(){
 
 	if(manipStick.getRawButton(2)==true){
 		P = P + 0.01;
@@ -550,7 +572,7 @@ public void adjustLiftingPID(){
 		D = D + 0.01;
 		SmartDashboard.putNumber("DValue", D);
 	}
-}
+} */
 
 
 //LINK LIFT MOTORS
