@@ -33,8 +33,8 @@ public class Robot extends SampleRobot {
 	int OPEN_BUTTON = 5; //LB
 	int CLOSE_BUTTON = 6; //RB
 	int STRAFE_AXIS = 0; //Left joystick side to side
-	int COMPRESSER_ON_BUTTON = 8; //Start
-	int COMPRESSER_OFF_BUTTON= 7; //Back
+	int COMPRESSOR_ON_BUTTON = 8; //Start
+	int COMPRESSOR_OFF_BUTTON= 7; //Back
 	int CHANGE_BUTTON = 4; //Y
 	int DPAD = 0; //POV
 	
@@ -296,21 +296,24 @@ public void checkEatingButtons(){
 
 	boolean hitT = limitTote.get();
 	boolean hitC = limitContainer.get();
+	SmartDashboard.putBoolean("hit tote?", hitT);
+	//SmartDashboard.putBoolean("hit container?", hitC);
+	
 	
 	if(   SINGLE_CONTROLLER == false      )
 	{
 			//manipStick Code
-			if (manipStick.getRawButton(EAT_BUTTON)==true && hitC == false && hitT == false )
+			if (manipStick.getRawButton(EAT_BUTTON)==true && hitT == true )
 			{  //if holding the A button, 
 				//then eater motor spin	
-				eaterRight.set(-eatSpeed);
-				eaterLeft.set(eatSpeed);
+				eaterRight.set(eatSpeed);
+				eaterLeft.set(-eatSpeed);
 				SmartDashboard.putString(  "Eater",        "Eating");
 			}
 			else if (manipStick.getRawButton(SPIT_BUTTON)==true ){  //if holding the X button, 
 				//then eater motor spin backwards	
-				eaterRight.set(spitSpeed);
-				eaterLeft.set(-spitSpeed);
+				eaterRight.set(-spitSpeed);
+				eaterLeft.set(spitSpeed);
 				SmartDashboard.putString(  "Eater",        "Spitting");
 
 			}
@@ -322,7 +325,8 @@ public void checkEatingButtons(){
 	}
 	
 	else{
-			//driverStick  jamesey
+		/**
+		 	//driverStick  jamesey
 		if (driverStick.getRawButton(EAT_BUTTON)==true && hitC == false && hitT == false ){
 				eaterRight.set(-eatSpeed);
 				eaterLeft.set(eatSpeed);
@@ -339,8 +343,10 @@ public void checkEatingButtons(){
 				eaterLeft.set(0.0);
 				SmartDashboard.putString(  "Eater",        "Hungry");
 			}
-	}
 	
+	
+	**/
+	}
 }
     
 
@@ -389,29 +395,30 @@ public void checkCompPressureSwitch(){
 public void checkComp(){
 	//manipStick
 	if(   SINGLE_CONTROLLER == false   ){
-	
-		if (manipStick.getRawButton(COMPRESSER_ON_BUTTON)==true ){  //if holding the start button	
-			airComprs.set(Relay.Value.kForward);
-			SmartDashboard.putString(  "Compressor",        "Button ON");
-
-		}                     		
-		 if (manipStick.getRawButton(COMPRESSER_OFF_BUTTON)==true ){  //if holding the back button, 
-			airComprs.set(Relay.Value.kOff);
-			SmartDashboard.putString(  "Compressor",        "Button OFF");
-		 }
- 
+			
+					SmartDashboard.putBoolean("checking the comp On button", manipStick.getRawButton(COMPRESSOR_ON_BUTTON));
+					if (manipStick.getRawButton(COMPRESSOR_ON_BUTTON)==true ){  //if holding the start button	
+						airComprs.set(Relay.Value.kForward);
+						SmartDashboard.putString(  "Compressor",        "Button ON");
+			
+					}                     		
+					 if (manipStick.getRawButton(COMPRESSOR_OFF_BUTTON)==true ){  //if holding the back button, 
+						airComprs.set(Relay.Value.kOff);
+						SmartDashboard.putString(  "Compressor",        "Button OFF");
+					 }
+	} 
 	// driverStick	 
 	 else{  
-		if (driverStick.getRawButton(COMPRESSER_ON_BUTTON)==true ){  //if holding the start button	
-			 airComprs.set(Relay.Value.kForward);
-			SmartDashboard.putString(  "Compressor",        "ON");
-
-		}                    
-		
-		if (driverStick.getRawButton(COMPRESSER_OFF_BUTTON)==true ){  //if holding the back button, 
-				airComprs.set(Relay.Value.kOff);}
-				SmartDashboard.putString(  "Compressor",        "OFF");
-	 	}
+					if (driverStick.getRawButton(COMPRESSOR_ON_BUTTON)==true ){  //if holding the start button	
+						 airComprs.set(Relay.Value.kForward);
+						SmartDashboard.putString(  "Compressor",        "ON");
+			
+					}                    
+					
+					if (driverStick.getRawButton(COMPRESSOR_OFF_BUTTON)==true ){  //if holding the back button, 
+							airComprs.set(Relay.Value.kOff);
+							SmartDashboard.putString(  "Compressor",        "OFF");
+				 	}
 	}
 }
 
