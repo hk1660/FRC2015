@@ -358,7 +358,7 @@ public void checkJoystick()
 	SmartDashboard.putNumber(  "rotate",        rotateValue);
 	SmartDashboard.putNumber(  "Strafe",        strafe);
 
-	hkDrive.mecanumDrive_Cartesian(strafe, moveValue, rotateValue, 0); //imu.getRoll()
+	hkDrive.mecanumDrive_Cartesian( strafe, -rotateValue, -moveValue, 0); //imu.getRoll()
 	//HKdriveClassObject.doMecanum(x,moveValue,rotateValue); 
 }
 
@@ -480,7 +480,7 @@ public void checkComp(){
 	} 
 	// driverStick	 
 	 else{  
-					if (driverStick.getRawButton(COMPRESSOR_ON_BUTTON)==true ){  //if holding the start button	
+				if (driverStick.getRawButton(COMPRESSOR_ON_BUTTON)==true ){  //if holding the start button	
 						 airComprs.set(Relay.Value.kForward);
 						SmartDashboard.putString(  "Compressor",        "ON");
 			
