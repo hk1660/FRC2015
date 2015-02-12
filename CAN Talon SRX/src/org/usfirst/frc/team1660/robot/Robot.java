@@ -398,7 +398,7 @@ public void checkComp(){
 			
 					SmartDashboard.putBoolean("checking the comp On button", manipStick.getRawButton(COMPRESSOR_ON_BUTTON));
 					if (manipStick.getRawButton(COMPRESSOR_ON_BUTTON)==true ){  //if holding the start button	
-						airComprs.set(Relay.Value.kForward);
+						airComprs.set(Relay.Value.kReverse);
 						SmartDashboard.putString(  "Compressor",        "Button ON");
 			
 					}                     		
@@ -410,7 +410,7 @@ public void checkComp(){
 	// driverStick	 
 	 else{  
 					if (driverStick.getRawButton(COMPRESSOR_ON_BUTTON)==true ){  //if holding the start button	
-						 airComprs.set(Relay.Value.kForward);
+						 airComprs.set(Relay.Value.kReverse);
 						SmartDashboard.putString(  "Compressor",        "ON");
 			
 					}                    
@@ -651,26 +651,27 @@ public void processGyro() {
 
 //AUTO EAT METHOD -Adonis & Jatara
 public void autoEat() {
-eaterRight.set(eatSpeed);
-eaterLeft.set(-eatSpeed);
+	eaterRight.set(eatSpeed);
+	eaterLeft.set(-eatSpeed);
 }
 
 //AUTO LIFT METHOD -Adonis & Jatara
 public void autoLift() {
-lifterLeft.set(-liftSpeed);
+	lifterLeft.setPosition(0);
+	lifterFollower.setPosition(0);
 }
 
 //AUTO DRIVE TO NEXT TOTE METHOD
 public void autoDrive(double driveSpeed) {
-frontleft.set(1);
-backleft.set(1);
-backright.set(1);
-frontright.set(1);
+	frontleft.set(1);
+	backleft.set(1);
+	backright.set(1);
+	frontright.set(1);
 }
 
 //AUTO DROP OFF A STACK METHOD
 public void autoDrop(double liftSpeed) {
- liftingSettings(liftSpeed);
+	liftingSettings(liftSpeed);
 }
 
 
