@@ -26,13 +26,14 @@ public class Robot extends SampleRobot {
   //DECLARING JOYSTICK VARIABLES   -jamesey
 	int FORWARDBACKWARD_AXIS = 1; //Left joystick up and down
 	int TURNSIDEWAYS_AXIS = 4; //Right joystick side to side
-	int LIFTDROP_AXIS = 1; //Left joystick up and down
+	int STRAFE_AXIS = 0; //Left joystick side to side
 	
+	int LIFTDROP_AXIS = 1; //Left joystick up and down
 	int EAT_BUTTON = 1; //A
 	int SPIT_BUTTON = 3; //X
 	int OPEN_BUTTON = 5; //LB
 	int CLOSE_BUTTON = 6; //RB
-	int STRAFE_AXIS = 0; //Left joystick side to side
+	
 	int COMPRESSOR_ON_BUTTON = 8; //Start
 	int COMPRESSOR_OFF_BUTTON= 7; //Back
 	int CHANGE_BUTTON = 4; //Y
@@ -80,12 +81,21 @@ public class Robot extends SampleRobot {
   //EATING VARIABLES
   double eatSpeed=0.75;
   double spitSpeed=0.50;
-  double liftSpeed=0.40; 
+  double liftSpeed=0.40;
+  
+  //SET PID VALUES
+  double LP = 0.100;
+  double LI = 0.0;
+  double LD = 0.0;
+  double FP = 0.100;
+  double FI = 0.0;
+  double FD = 0.0;
   
   //LIFTING VARIABLES
-  double P = 0.05;
+  double P = 0.60;
   double I = 0.00;
   double D = 0.00;
+  
 
   int low = 0;
   int middle = 14*1481;
@@ -198,14 +208,76 @@ public class Robot extends SampleRobot {
 	}  
   
   
+  
   public void autonomous(){
+	 
 	  
+	 int currentStrategy = (int) strategy.getSelected(); 
+	  while(isAutonomous() && isEnabled()){ 
+	   
 	  
-	  
-	  
-	  
-	  
-	  
+	     if(currentStrategy == 1) {
+	    	 eatTote();
+	    	 Timer.delay(5);
+	    	 lifterLeft.setPosition(middle);
+	    	 lifterFollower.setPosition(middle);
+	    	 hkDrive.mecanumDrive_Cartesian(-1, 0, 0, imu.getRoll());
+	    	 Timer.delay(5);
+	    	 hkDrive.mecanumDrive_Cartesian(0, 0, 0, imu.getRoll());
+	    	 
+	    
+	    	 
+	    	 
+	    	 
+	    	 
+	     }
+	     else if(currentStrategy == 2){	
+	    	 eatTote();
+	    	 Timer.delay(5);
+	    	 lifterLeft.setPosition(middle);
+	    	 lifterFollower.setPosition(middle);
+	    	 hkDrive.mecanumDrive_Cartesian(1, 0, 0, imu.getRoll());
+	    	 Timer.delay(5);
+	    	 hkDrive.mecanumDrive_Cartesian(0, 1, 0, imu.getRoll());
+	    	 Timer.delay(2);
+	    	 hkDrive.mecanumDrive_Cartesian(-1, 0, 0, imu.getRoll());
+	    	 Timer.delay(2);
+	    	 eatTote();
+	    	 Timer.delay(5);
+	    	 hkDrive.mecanumDrive_Cartesian(-1, 0, 0, imu.getRoll());
+	    	 Timer.delay(5);
+	     }
+	    	
+	     else {
+	    	 eatTote();
+	    	 Timer.delay(5);
+	    	 lifterLeft.setPosition(middle);
+	    	 lifterFollower.setPosition(middle);
+	    	 hkDrive.mecanumDrive_Cartesian(1, 0, 0, imu.getRoll());
+	    	 Timer.delay(5);
+	    	 hkDrive.mecanumDrive_Cartesian(0, 1, 0, imu.getRoll());
+	    	 Timer.delay(2);
+	    	 hkDrive.mecanumDrive_Cartesian(-1, 0, 0, imu.getRoll());
+	    	 Timer.delay(2);
+	    	 eatTote();
+	    	 Timer.delay(5);
+	    	 hkDrive.mecanumDrive_Cartesian(1, 0, 0, imu.getRoll());
+	    	 Timer.delay(5);
+	    	 hkDrive.mecanumDrive_Cartesian(0, 1, 0, imu.getRoll());
+	    	 Timer.delay(2);
+	    	 hkDrive.mecanumDrive_Cartesian(-1, 0, 0, imu.getRoll());
+	    	 Timer.delay(5);
+	    	 lifterLeft.setPosition(high);
+	    	 lifterFollower.setPosition(high);
+	    	 eatTote();
+	    	 Timer.delay(5);
+	    	 hkDrive.mecanumDrive_Cartesian(-1, 0, 0, imu.getRoll());
+	    	 Timer.delay(5);
+	    	 
+	    	 
+  
+	     }  
+	  }
   }
   
   
@@ -221,7 +293,7 @@ public class Robot extends SampleRobot {
     	checkEatingButtons();
        	checkTusks();
     	checkLiftingButtons();
-    	//adjustLiftingPID();
+    	adjustLiftingPID();
     	//checkRumble();
     	
        	Timer.delay(0.01);  // Note that the CANTalon only receives updates every
@@ -264,9 +336,9 @@ public class Robot extends SampleRobot {
 public void checkJoystick()
 {
 	
-	 double threshold = 0.05;
+	 double threshold = 0.11;
 	 
-	 double x = driverStick.getRawAxis(STRAFE_AXIS) ; // right and left on the left thumb stick?
+	 double strafe = driverStick.getRawAxis(STRAFE_AXIS) ; // right and left on the left thumb stick?
 	 double moveValue = driverStick.getRawAxis(FORWARDBACKWARD_AXIS);// up and down on left thumb stick?
 	 double rotateValue = driverStick.getRawAxis(TURNSIDEWAYS_AXIS);// right and left on right thumb stick
 	
@@ -277,19 +349,18 @@ public void checkJoystick()
 	if(rotateValue > threshold*-1 && rotateValue < threshold) {
 		rotateValue = 0;
 	}
-	if(x > threshold*-1 && x < threshold) {
-		x = 0;
+	if(strafe > threshold*-1 && strafe < threshold) {
+		strafe = 0;
 	}
 	
 	//MECANUM -Matthew
 	SmartDashboard.putNumber(  "move",        moveValue);
 	SmartDashboard.putNumber(  "rotate",        rotateValue);
-	SmartDashboard.putNumber(  "Strafe",        x);
+	SmartDashboard.putNumber(  "Strafe",        strafe);
 
-	hkDrive.mecanumDrive_Cartesian(moveValue, rotateValue, x, 0); //use imu.getRoll() ??
+	hkDrive.mecanumDrive_Cartesian(strafe, moveValue, rotateValue, 0); //imu.getRoll()
 	//HKdriveClassObject.doMecanum(x,moveValue,rotateValue); 
 }
-
 
 //EAT and SPITING WITH XBOX360 -Adonis & Jatara
 public void checkEatingButtons(){
@@ -306,8 +377,7 @@ public void checkEatingButtons(){
 			if (manipStick.getRawButton(EAT_BUTTON)==true && hitT == true )
 			{  //if holding the A button, 
 				//then eater motor spin	
-				eaterRight.set(eatSpeed);
-				eaterLeft.set(-eatSpeed);
+				eatTote();
 				SmartDashboard.putString(  "Eater",        "Eating");
 			}
 			else if (manipStick.getRawButton(SPIT_BUTTON)==true ){  //if holding the X button, 
@@ -393,12 +463,13 @@ public void checkCompPressureSwitch(){
 
 //COMPRESSOR ON & OFF WITH JOYSTICKS -jamesey
 public void checkComp(){
+	
 	//manipStick
 	if(   SINGLE_CONTROLLER == false   ){
 			
 					SmartDashboard.putBoolean("checking the comp On button", manipStick.getRawButton(COMPRESSOR_ON_BUTTON));
 					if (manipStick.getRawButton(COMPRESSOR_ON_BUTTON)==true ){  //if holding the start button	
-						airComprs.set(Relay.Value.kReverse);
+						airComprs.set(Relay.Value.kForward);
 						SmartDashboard.putString(  "Compressor",        "Button ON");
 			
 					}                     		
@@ -410,7 +481,7 @@ public void checkComp(){
 	// driverStick	 
 	 else{  
 					if (driverStick.getRawButton(COMPRESSOR_ON_BUTTON)==true ){  //if holding the start button	
-						 airComprs.set(Relay.Value.kReverse);
+						 airComprs.set(Relay.Value.kForward);
 						SmartDashboard.putString(  "Compressor",        "ON");
 			
 					}                    
@@ -432,16 +503,13 @@ public void checkLiftingButtons(){
 	lifterFollower.changeControlMode(CANTalon.ControlMode.Position);
 	lifterLeft.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 	lifterFollower.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-	lifterFollower.reverseSensor(true);
+	//lifterFollower.reverseSensor(true);
+	
 	
 	//Encoder values
-	SmartDashboard.putNumber("encLposition", lifterLeft.getEncPosition());
-	SmartDashboard.putNumber("encRposition", lifterFollower.getEncPosition());
 	SmartDashboard.putNumber("encLspeed", lifterLeft.getEncVelocity());
 	SmartDashboard.putNumber("encRspeed", lifterFollower.getEncVelocity());
-	//SmartDashboard.putNumber("encoderLValue", lifterLeft.getPosition());
-	//SmartDashboard.putNumber("encoderRValue", lifterFollower.getPosition());
-	
+
 	boolean hitTL = limitTopL.get();
 	boolean hitBL = limitBottomL.get();
 	boolean hitTR = limitTopR.get();
@@ -451,13 +519,7 @@ public void checkLiftingButtons(){
 	SmartDashboard.putBoolean(  "limitBottomL",     hitBL);
 	SmartDashboard.putBoolean(  "limitTopL",        hitTL);	
 	
-	//SET PID VALUES
-	double LP = 0.600;
-	double LI = 0.0;
-	double LD = 0.0;
-	double FP = 0.600;
-	double FI = 0.0;
-	double FD = 0.0;
+	
 
 	lifterLeft.setPID(LP, LI, LD);
 	lifterFollower.setPID(FP, FI, FD);
@@ -468,11 +530,16 @@ public void checkLiftingButtons(){
 	double syncDfactor = 1.0;
 	int errorThresh = 700; //about a half inch?
 	
-	if(lifterLeft.getEncPosition() - lifterFollower.getEncPosition()  > errorThresh) {
+	int leftEncPosition = Math.abs( lifterLeft.getEncPosition() );
+	int followerEncPosition = Math.abs( lifterFollower.getEncPosition() );
+	SmartDashboard.putNumber("encLposition", leftEncPosition);
+	SmartDashboard.putNumber("encRposition", followerEncPosition);
+ 
+	if(leftEncPosition - followerEncPosition   > errorThresh) {
 		lifterFollower.setPID(FP*syncPfactor, FI*syncIfactor, FD*syncDfactor);
 	}
 	
-	else if(lifterFollower.getEncPosition() - lifterLeft.getEncPosition()  > errorThresh) {
+	else if(followerEncPosition -leftEncPosition  > errorThresh) {
 		lifterLeft.setPID(LP*syncPfactor, LI*syncIfactor, LD*syncDfactor);
 	}
 	else {
@@ -506,37 +573,40 @@ public void checkLiftingButtons(){
 		
 		if(manipStick.getPOV(DPAD) == 180) {  //go to 0" from bottom
 			lifterLeft.set(low);
-			lifterFollower.set(low);
+			lifterFollower.set(-low);
 			SmartDashboard.putString("Lifter Status", "Down");
 			manualLiftCount = 0;
 		}
 		if(manipStick.getPOV(DPAD) == 270) { //go to 12" from bottom
 			lifterLeft.set(middle);
-			lifterFollower.set(middle);
+			lifterFollower.set(-middle);
 			SmartDashboard.putString("Lifter Status", "Middle");
 			manualLiftCount = 0;
 		}		
 		if(manipStick.getPOV(DPAD) == 0) { //go to 26" from bottom
 		    lifterLeft.set(high);
-			lifterFollower.set(high);
+			lifterFollower.set(-high);
 			SmartDashboard.putString("Lifter Status", "High");
 			manualLiftCount = 0;
 		}
-		if(manipStick.getRawAxis(5) < -0.1){ //go down until you hit limit switch
+		if(manipStick.getRawAxis(5) > 0.1){ //go down until you hit limit switch
 			lifterLeft.set(-1481*40);
-			lifterFollower.set(-1481*40);
+			lifterFollower.set(1481*40);
+			SmartDashboard.putString("Lifter Status", "LIMIT");
 		}
 		
 		//Limit Switch commands
 		if(hitBR==false){		//RESET THE RIGHT ENCODER 
 			lifterFollower.setPosition(0);
 			lifterFollower.set(0);
-			lifterLeft.set(0);
+			//lifterLeft.set(0);
+			SmartDashboard.putString("Lifter Status", "ResetRight");
 		}
 		if(hitBL==false) {		//RESET THE LEFT ENCODER
 			lifterLeft.setPosition(0);
-			lifterFollower.set(0);
+			//lifterFollower.set(0);
 			lifterLeft.set(0);
+			SmartDashboard.putString("Lifter Status", "ResetLeft");
 		}
 		if(hitTR==false){
 			//liftingSettings(0);		
@@ -553,10 +623,12 @@ public void checkLiftingButtons(){
 		if(manipStick.getRawAxis(3)>0.1) { //right trigger disables the motors
 			lifterLeft.disable();
 			lifterFollower.disable();
+			SmartDashboard.putString("Lifter Status", "Disabled");
 		}
 		if(manipStick.getRawAxis(4)>0.1){ //left trigger renables lift motors
 			lifterLeft.enableControl();
 			lifterFollower.enableControl();	
+			SmartDashboard.putString("Lifter Status", "Enabled");
 		}
 
 		SmartDashboard.putNumber(  	"manualLiftCount",      manualLiftCount);
@@ -567,23 +639,27 @@ public void checkLiftingButtons(){
 
 
 //MANUALLY ADJUST VALUES OF P, I, D
-/*public void adjustLiftingPID(){
+public void adjustLiftingPID(){
 
 	if(manipStick.getRawButton(2)==true){
-		P = P + 0.01;
-		SmartDashboard.putNumber("PValue", P);
+		LP = LP + 0.01;
+		FP = FP + 0.01;
+		SmartDashboard.putNumber("PValue", LP);
 	}
 
 	if(manipStick.getRawButton(8)==true){
-		I = I + 0.01;
-		SmartDashboard.putNumber("IValue", I);
+		LI = LI + 0.01;
+		FI = FI + 0.01;
+		SmartDashboard.putNumber("IValue", LI);
+		
 	}
 
 	if(manipStick.getRawButton(7)==true){
-		D = D + 0.01;
-		SmartDashboard.putNumber("DValue", D);
+		LD = LD + 0.01;
+		FD = FD + 0.01;
+		SmartDashboard.putNumber("DValue", LD);
 	}
-} */
+} 
 
 
 //LINK LIFT MOTORS
@@ -650,15 +726,15 @@ public void processGyro() {
 
 
 //AUTO EAT METHOD -Adonis & Jatara
-public void autoEat() {
+public void eatTote() {
 	eaterRight.set(eatSpeed);
 	eaterLeft.set(-eatSpeed);
 }
 
 //AUTO LIFT METHOD -Adonis & Jatara
-public void autoLift() {
-	lifterLeft.setPosition(0);
-	lifterFollower.setPosition(0);
+public void autoLift(double position) {
+	lifterLeft.setPosition(position);
+	lifterFollower.setPosition(position);
 }
 
 //AUTO DRIVE TO NEXT TOTE METHOD
