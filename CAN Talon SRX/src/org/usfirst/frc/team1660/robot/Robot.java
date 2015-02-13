@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.Compressor;
 
 //import edu.wpi.first.wpilibj.CANTalon.ControlMode;
 
@@ -52,7 +53,8 @@ public class Robot extends SampleRobot {
   
   //DECLARING RELAYS
   Relay tuskRelay;
-  Relay airComprs;
+  Relay airC;
+ // Compressor airComp;
   
   //DECLARING SENSORS
   DigitalInput pressureSwitch;
@@ -84,11 +86,11 @@ public class Robot extends SampleRobot {
   double liftSpeed=0.40;
   
   //SET PID VALUES
-  double LP = 0.100;
-  double LI = 0.0;
+  double LP = 0.600;
+  double LI = 0.100;
   double LD = 0.0;
-  double FP = 0.100;
-  double FI = 0.0;
+  double FP = 0.600;
+  double FI = 0.100;
   double FD = 0.0;
   
   //LIFTING VARIABLES
@@ -161,9 +163,9 @@ public class Robot extends SampleRobot {
       
       
       //INITIALIZE RELAYS   jamesey
-      airComprs  = new Relay(0);
+      airC  = new Relay(0);
       tuskRelay  = new Relay(1);
-      airComprs.setDirection(Relay.Direction.kForward);
+      //airC.setDirection(Relay.Direction.kForward);
 
 
       //INITIALIZE SENSORS    
@@ -183,14 +185,14 @@ public class Robot extends SampleRobot {
 /////////////////////////////////////////
   
   public void robotInit() {
-		
-	  	SINGLE_CONTROLLER = true; //start by using only 1 xbox controller, touch button to add manipStick
+	    airC.set(Relay.Value.kForward);
+	    SINGLE_CONTROLLER = true; //start by using only 1 xbox controller, touch button to add manipStick
 	    
 	  	hkDrive     = new RobotDrive(frontleft, backleft, frontright, backright);
 	    driverStick = new Joystick(1);
 	    manipStick  = new Joystick(2);
 	    //HKdriveClassObject.zeroYaw();  //calibrate robot gyro to zero when facing away from driver (may need 20 seconds)
-	    airComprs.set(Relay.Value.kForward);
+	    airC.set(Relay.Value.kForward);
 	    
         startingPosition = new SendableChooser();
         startingPosition.addDefault("Left", new Integer(1));
@@ -210,28 +212,39 @@ public class Robot extends SampleRobot {
   
   
   public void autonomous(){
+	  Timer timerAuto = new Timer();
+	  timerAuto.start();
 	 
 	  
 	 int currentStrategy = (int) strategy.getSelected(); 
-	  while(isAutonomous() && isEnabled()){ 
+	  while(isAutonomous() && isEnabled() && timerAuto.get() < 4){ 
 	   
 	  
+		  SmartDashboard.putNumber("match time",timerAuto.get());
+		  
 	     if(currentStrategy == 1) {
-	    	 eatTote();
-	    	 Timer.delay(5);
-	    	 lifterLeft.setPosition(middle);
-	    	 lifterFollower.setPosition(middle);
-	    	 hkDrive.mecanumDrive_Cartesian(-1, 0, 0, imu.getRoll());
-	    	 Timer.delay(5);
-	    	 hkDrive.mecanumDrive_Cartesian(0, 0, 0, imu.getRoll());
 	    	 
-	    
+	    	 if(timerAuto.get() < 2) {
+	    		 eatTote();
+	    	 }
+	    	 if(timerAuto.get() > 2) {
+	    		 stopEatTote();
+	    		 hkDrive.mecanumDrive_Cartesian(0, 1, 0, 0);
+	    	 }
+	    	  
+	    	 //lifterLeft.setPosition(middle);
+	    	 //lifterFollower.setPosition(middle);
+	    	// hkDrive.mecanumDrive_Cartesian(0, 1, 0, 0);
+	    	
 	    	 
+//	    	 if(Timer.getMatchTime() > 5 ) {
+	//    		 stopDrive();
+	  //  	 }
 	    	 
-	    	 
-	    	 
+	    	 //Timer.delay(5);
+	    	 //hkDrive.mecanumDrive_Cartesian(0, 0, 0, imu.getRoll());	 
 	     }
-	     else if(currentStrategy == 2){	
+	    /* else if(currentStrategy == 2){	
 	    	 eatTote();
 	    	 Timer.delay(5);
 	    	 lifterLeft.setPosition(middle);
@@ -246,9 +259,9 @@ public class Robot extends SampleRobot {
 	    	 Timer.delay(5);
 	    	 hkDrive.mecanumDrive_Cartesian(-1, 0, 0, imu.getRoll());
 	    	 Timer.delay(5);
-	     }
+	     } */
 	    	
-	     else {
+	    /* else {
 	    	 eatTote();
 	    	 Timer.delay(5);
 	    	 lifterLeft.setPosition(middle);
@@ -276,8 +289,10 @@ public class Robot extends SampleRobot {
 	    	 
 	    	 
   
-	     }  
+	     }  */
 	  }
+	  stopEatTote();
+	  stopDrive();
   }
   
   
@@ -357,7 +372,7 @@ public void checkJoystick()
 	SmartDashboard.putNumber(  "move",        moveValue);
 	SmartDashboard.putNumber(  "rotate",        rotateValue);
 	SmartDashboard.putNumber(  "Strafe",        strafe);
-
+    //Below is right order, Internet(wpi) wrong
 	hkDrive.mecanumDrive_Cartesian( strafe, -rotateValue, -moveValue, 0); //imu.getRoll()
 	//HKdriveClassObject.doMecanum(x,moveValue,rotateValue); 
 }
@@ -451,11 +466,11 @@ public void checkTusks(){
 public void checkCompPressureSwitch(){
 	
 	if (pressureSwitch.get()) {
-        airComprs.set(Relay.Value.kForward);
+        airC.set(Relay.Value.kForward);
         SmartDashboard.putString("Compressor", "Switched ON");
 	} 
    else {
-        airComprs.set(Relay.Value.kOff);
+        airC.set(Relay.Value.kOff);
         SmartDashboard.putString("Compressor", "Switched OFF");
    }      
 }
@@ -469,25 +484,26 @@ public void checkComp(){
 			
 					SmartDashboard.putBoolean("checking the comp On button", manipStick.getRawButton(COMPRESSOR_ON_BUTTON));
 					if (manipStick.getRawButton(COMPRESSOR_ON_BUTTON)==true ){  //if holding the start button	
-						airComprs.set(Relay.Value.kForward);
-						SmartDashboard.putString(  "Compressor",        "Button ON");
-			
+						airC.set(Relay.Value.kForward);
+						SmartDashboard.putString(  "Compressor",        "Button fwd");
+			        
 					}                     		
 					 if (manipStick.getRawButton(COMPRESSOR_OFF_BUTTON)==true ){  //if holding the back button, 
-						airComprs.set(Relay.Value.kOff);
-						SmartDashboard.putString(  "Compressor",        "Button OFF");
+						airC.set(Relay.Value.kOff);
+						SmartDashboard.putString(  "Compressor",        "Button rev");
 					 }
 	} 
 	// driverStick	 
 	 else{  
 				if (driverStick.getRawButton(COMPRESSOR_ON_BUTTON)==true ){  //if holding the start button	
-						 airComprs.set(Relay.Value.kForward);
+						 airC.set(Relay.Value.kForward);
+						// airC.start();
 						SmartDashboard.putString(  "Compressor",        "ON");
 			
 					}                    
 					
 					if (driverStick.getRawButton(COMPRESSOR_OFF_BUTTON)==true ){  //if holding the back button, 
-							airComprs.set(Relay.Value.kOff);
+							airC.set(Relay.Value.kOff);
 							SmartDashboard.putString(  "Compressor",        "OFF");
 				 	}
 	}
@@ -728,7 +744,11 @@ public void processGyro() {
 //AUTO EAT METHOD -Adonis & Jatara
 public void eatTote() {
 	eaterRight.set(eatSpeed);
-	eaterLeft.set(-eatSpeed);
+	eaterLeft.set(-eatSpeed);	
+}
+public void stopEatTote() {
+	eaterRight.set(0);
+	eaterLeft.set(0);
 }
 
 //AUTO LIFT METHOD -Adonis & Jatara
@@ -748,6 +768,13 @@ public void autoDrive(double driveSpeed) {
 //AUTO DROP OFF A STACK METHOD
 public void autoDrop(double liftSpeed) {
 	liftingSettings(liftSpeed);
+}
+public void stopDrive() {
+	frontleft.set(0);
+	backleft.set(0);
+	backright.set(0);
+	backleft.set(0);
+	
 }
 
 
