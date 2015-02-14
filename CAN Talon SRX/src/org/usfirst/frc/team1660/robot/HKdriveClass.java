@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+//import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
 import com.kauailabs.nav6.frc.IMUAdvanced;
 
@@ -59,18 +59,16 @@ public class HKdriveClass extends PIDSubsystem {
     };
     
     //AutoRotate Preferences
-    CANTalon.ControlMode currControlMode;
+    //CANTalon.ControlMode currControlMode;
     int maxOutputSpeed;
     int maxSpeedModeRPMs;    
     double tolerance_degrees = 2.0;
     double DefaultTargetDegrees = 0.0;
     
     //PID Preferences
-    public static double p = 0.0070;   //proportional
-    public static double i = 0.00001;	//integral
+    public static double p = 0.0024;   //proportional
+    public static double i = 0.0001;	//integral
     public static double d = 0.0;		//derivative
-    
-    
     
     public HKdriveClass() {
     	super("HKdriveClass", p, i, d);
@@ -90,8 +88,8 @@ public class HKdriveClass extends PIDSubsystem {
             BL.getPowerCycled();
             BR.getPowerCycled();*/
             
-            maxSpeedModeRPMs = (int)(2650.0/12.75);
-            setMode(CANTalon.ControlMode.Speed); //from this class
+            //maxSpeedModeRPMs = (int)(2650.0/12.75);
+            //setMode(CANTalon.ControlMode.Speed); 
 
             
             
@@ -108,31 +106,179 @@ public class HKdriveClass extends PIDSubsystem {
         } catch (Exception ex) {
             //ex.printStackTrace();
         }
-        if ( imu != null ) {
-            LiveWindow.addSensor("IMU", "Gyro", imu);
-        }
-        
+    	
         	first_iteration = true;
  
     		
    	}
     
-        
-
-    	
+      	
 // METHODS TO CONTROL MECANUM DRIVETRAIN WITH GYRO & PID.
 // Call these methods.	
     	
+
+	//ZERO THE YAW ON GYRO AFTER CALIBRATION   
+	public void zeroYaw(){
+		//Calibration is complete after ~20 seconds after robot is powered on.
+		//During Cal, robot should be still.
+		
+		boolean is_calibrating = imu.isCalibrating();
+		if ( first_iteration && !is_calibrating ) {
+		    Timer.delay( 0.3 );
+		    imu.zeroYaw();
+		    first_iteration = false;
+		}
+	
+	}   
+
+    void mecanumDriveFwdKinematics( double wheelSpeeds[], double velocities[] )
+    {
+        for ( int i = 0; i < 3; i++ )
+        {
+            velocities[i] = 0;
+            for ( int wheel = 0; wheel < 4; wheel ++ )
+            {
+                    velocities[i] += wheelSpeeds[wheel] * (1 / invMatrix[wheel][i]);
+            }
+            velocities[i] *= ((double)1.0/4);
+        }
+    }
+
+    void mecanumDriveInvKinematics( double velocities[], double[] wheelSpeeds)
+    {
+        for ( int wheel = 0; wheel < 4; wheel ++ )
+        {
+            wheelSpeeds[wheel] = 0;
+            for ( int i = 0; i < 3; i++ )
+            {
+                    wheelSpeeds[wheel] += velocities[i] * invMatrix[wheel][i];
+            }
+        }
+    }    
+
+
+    boolean fod_enable = true;
+    double next_autorotate_value = 0.0;
     
-    // Set the default command for a subsystem here.
+    public void doMecanum( double vX, double vY, double vRot) {
+        
+        // If auto-rotating, replace vRot with the next
+        // calculated value
+        
+        if ( getAutoRotation() ) {
+            vRot = next_autorotate_value;
+        }
+        
+        boolean imu_connected = false;
+        if ( imu != null ) { 
+                imu_connected = imu.isConnected();
+        }
+                
+        // Field-oriented drive - Adjust input angle for gyro offset angle
+        
+        double curr_gyro_angle_degrees = 0;
+        if ( fod_enable && imu_connected ) 
+        {
+                curr_gyro_angle_degrees = imu.getYaw();
+        }
+        double curr_gyro_angle_radians = curr_gyro_angle_degrees * Math.PI/180;       
+          
+        double temp = vX * Math.cos( curr_gyro_angle_radians ) + vY * Math.sin( curr_gyro_angle_radians );
+        vY = -vX * Math.sin( curr_gyro_angle_radians ) + vY * Math.cos( curr_gyro_angle_radians );
+        vX = temp;
+        
+        try {
+            double excessRatio = (double)1.0 / ( Math.abs(vX) + Math.abs(vY) + Math.abs(vRot) );
+            if ( excessRatio < 1.0 )
+            {
+                vX      *= excessRatio;
+                vY      *= excessRatio;
+                vRot    *= excessRatio;
+            }
+            
+            vRot *= (1/cRotK);
+            vRot *= ROTATE_DIRECTION;
+            
+            SmartDashboard.putNumber( "vRot", vRot);
+            double wheelSpeeds[] = new double[4];
+            double velocities[] = new double[3];
+            velocities[0] = vX;
+            velocities[1] = vY;
+            velocities[2] = vRot;
+            
+            mecanumDriveInvKinematics( velocities, wheelSpeeds );
+            
+            //Set speeds of the motors, based on Max & Kinematics Equations
+            FL.set(maxOutputSpeed * wheelSpeeds[0] * -1);
+            FR.set(maxOutputSpeed * wheelSpeeds[1]     );
+            BL.set(maxOutputSpeed * wheelSpeeds[2] * -1);
+            BR.set(maxOutputSpeed * wheelSpeeds[3]     );
+                    
+            SmartDashboard.putNumber( "SpeedOut_FrontLeft", FL.get());
+            SmartDashboard.putNumber( "SpeedOut_BackLeft", BL.get());
+            SmartDashboard.putNumber( "SpeedOut_FrontRight", FR.get());
+            SmartDashboard.putNumber( "SpeedOut_BackRight", BR.get());
+                        
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }        
+    }
+
+    //ENABLE OR DISABLE PID CONTROL
+    public void setAutoRotation(boolean enable) {
+        if ( enable ) {
+            getPIDController().enable();
+        }
+        else {
+            getPIDController().disable();
+        }
+    }
+   
+    public boolean getAutoRotation() {
+        SmartDashboard.putBoolean( "AutoRotateEnabled", getPIDController().isEnable());
+        return getPIDController().isEnable();
+    }
+   
+    //FIELD-ORIENTED DRIVING TOGGLE SETTING 
+    public void setFODEnabled(boolean enabled) {
+        fod_enable = enabled;
+    }
+    
+    public boolean getFODEnabled() {
+        return fod_enable;
+    }
+
+
+//REQUIRED INHERITED METHODS 
+	// Set the default command for a subsystem here.
     public void initDefaultCommand() {   
         //setDefaultCommand(new StickDrive());
     }	
     
+    protected double returnPIDInput() {
+        double current_yaw = 0.0;
+        if ( imu.isConnected() ) {
+            current_yaw = imu.getYaw();
+        }
+        SmartDashboard.putNumber( "AutoRotatePIDInput", current_yaw);
+        return current_yaw;
+    }
+    
+    protected void usePIDOutput(double d) {
+        next_autorotate_value = d;
+        SmartDashboard.putNumber( "AutoRotatePIDOutput", next_autorotate_value);
+    }
+
+        
+
+//UNUSED METHODS FOR ENCODER SPEED CONTROL
+  
+/**	
     
     //Initializes motor to boundary values from encoder and battery (based on CANJaguar class)
     void initMotor( CANTalon motor ) {
         try {
+        	
             if ( currControlMode == CANTalon.ControlMode.Speed )
             {
                 //motor.configMaxOutputVoltage(12.0);
@@ -187,160 +333,5 @@ public class HKdriveClass extends PIDSubsystem {
         }
     }    
 
-    void mecanumDriveFwdKinematics( double wheelSpeeds[], double velocities[] )
-    {
-        for ( int i = 0; i < 3; i++ )
-        {
-            velocities[i] = 0;
-            for ( int wheel = 0; wheel < 4; wheel ++ )
-            {
-                    velocities[i] += wheelSpeeds[wheel] * (1 / invMatrix[wheel][i]);
-            }
-            velocities[i] *= ((double)1.0/4);
-        }
-    }
-
-    void mecanumDriveInvKinematics( double velocities[], double[] wheelSpeeds)
-    {
-        for ( int wheel = 0; wheel < 4; wheel ++ )
-        {
-            wheelSpeeds[wheel] = 0;
-            for ( int i = 0; i < 3; i++ )
-            {
-                    wheelSpeeds[wheel] += velocities[i] * invMatrix[wheel][i];
-            }
-        }
-    }    
-
-    boolean fod_enable = true;
-    double next_autorotate_value = 0.0;
-    
-    public void doMecanum( double vX, double vY, double vRot) {
-        
-        // If auto-rotating, replace vRot with the next
-        // calculated value
-        
-        if ( getAutoRotation() ) {
-            vRot = next_autorotate_value;
-        }
-        
-        boolean imu_connected = false;
-        if ( imu != null ) { 
-                imu_connected = imu.isConnected();
-        }
-                
-        // Field-oriented drive - Adjust input angle for gyro offset angle
-        
-        double curr_gyro_angle_degrees = 0;
-        if ( fod_enable && imu_connected ) 
-        {
-                curr_gyro_angle_degrees = imu.getYaw();
-        }
-        double curr_gyro_angle_radians = curr_gyro_angle_degrees * Math.PI/180;       
-          
-        double temp = vX * Math.cos( curr_gyro_angle_radians ) + vY * Math.sin( curr_gyro_angle_radians );
-        vY = -vX * Math.sin( curr_gyro_angle_radians ) + vY * Math.cos( curr_gyro_angle_radians );
-        vX = temp;
-        
-        try {
-            double excessRatio = (double)1.0 / ( Math.abs(vX) + Math.abs(vY) + Math.abs(vRot) );
-            if ( excessRatio < 1.0 )
-            {
-                vX      *= excessRatio;
-                vY      *= excessRatio;
-                vRot    *= excessRatio;
-            }
-            
-            vRot *= (1/cRotK);
-            vRot *= ROTATE_DIRECTION;
-            
-            SmartDashboard.putNumber( "vRot", vRot);
-            double wheelSpeeds[] = new double[4];
-            double velocities[] = new double[3];
-            velocities[0] = vX;
-            velocities[1] = vY;
-            velocities[2] = vRot;
-            
-            mecanumDriveInvKinematics( velocities, wheelSpeeds );
-            
-            /*
-            checkForRestartedMotor( FL, "Front Left" );
-            checkForRestartedMotor( FR, "Front Right" );
-            checkForRestartedMotor( BL, "Back Left" );
-            checkForRestartedMotor( BR, "Back Right" );
-            */
-            FL.set(maxOutputSpeed * wheelSpeeds[0] * -1);
-            FR.set(maxOutputSpeed * wheelSpeeds[1]     );
-            BL.set(maxOutputSpeed * wheelSpeeds[2] * -1);
-            BR.set(maxOutputSpeed * wheelSpeeds[3]     );
-            
-            //CANTalon.updateSyncGroup(syncGroup);
-            
-            SmartDashboard.putNumber( "SpeedOut_FrontLeft", FL.get());
-            SmartDashboard.putNumber( "SpeedOut_BackLeft", BL.get());
-            SmartDashboard.putNumber( "SpeedOut_FrontRight", FR.get());
-            SmartDashboard.putNumber( "SpeedOut_BackRight", BR.get());
-            
-            SmartDashboard.putNumber( "Speed_FrontLeft", FL.getSpeed());
-            SmartDashboard.putNumber( "Speed_BackLeft", BL.getSpeed());
-            SmartDashboard.putNumber( "Speed_FrontRight", FR.getSpeed());
-            SmartDashboard.putNumber( "Speed_BackRight", BR.getSpeed());
-            
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }        
-    }
-
-    protected double returnPIDInput() {
-        double current_yaw = 0.0;
-        if ( imu.isConnected() ) {
-            current_yaw = imu.getYaw();
-        }
-        SmartDashboard.putNumber( "AutoRotatePIDInput", current_yaw);
-        return current_yaw;
-    }
-
-    protected void usePIDOutput(double d) {
-        next_autorotate_value = d;
-        SmartDashboard.putNumber( "AutoRotatePIDOutput", next_autorotate_value);
-    }
-    
-    public void setAutoRotation(boolean enable) {
-        if ( enable ) {
-            getPIDController().enable();
-        }
-        else {
-            getPIDController().disable();
-        }
-    }
-    
-    public boolean getAutoRotation() {
-        SmartDashboard.putBoolean( "AutoRotateEnabled", getPIDController().isEnable());
-        return getPIDController().isEnable();
-    }
-    
-    public void setFODEnabled(boolean enabled) {
-        fod_enable = enabled;
-    }
-    
-    public boolean getFODEnabled() {
-        return fod_enable;
-    }
-
-    
-	//ZERO THE YAW ON GYRO AFTER CALIBRATION   
-	public void zeroYaw(){
-		//Calibration is complete after ~20 seconds after robot is powered on.
-		//During Cal, robot should be still.
-		
-		boolean is_calibrating = imu.isCalibrating();
-		if ( first_iteration && !is_calibrating ) {
-		    Timer.delay( 0.3 );
-		    imu.zeroYaw();
-		    first_iteration = false;
-		}
-	
-	}   
-
-
+**/	
 }
