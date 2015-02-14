@@ -82,7 +82,7 @@ public class Robot extends SampleRobot {
   
   //EATING VARIABLES
   double eatSpeed=0.75;
-  double spitSpeed=0.50;
+  double spitSpeed=0.25;
   double liftSpeed=0.40;
   
   //SET PID VALUES
@@ -115,7 +115,7 @@ public class Robot extends SampleRobot {
   //SmartDashboard objects
   SendableChooser startingPosition;
   SendableChooser strategy;
-  
+ 
   
   
   public Robot() {
@@ -193,7 +193,7 @@ public class Robot extends SampleRobot {
 	    //HKdriveClassObject.zeroYaw();  //calibrate robot gyro to zero when facing away from driver (may need 20 seconds)
 	    airC.set(Relay.Value.kForward);
 	    
-        startingPosition = new SendableChooser();
+	    startingPosition = new SendableChooser();
         startingPosition.addDefault("Left", new Integer(1));
         startingPosition.addObject("Middle", new Integer(2));
         startingPosition.addObject("Right", new Integer(3));
@@ -224,11 +224,13 @@ public class Robot extends SampleRobot {
 		  
 	     if(currentStrategy == 1) {
 	    	 
-	    	 if(timerA < 2.0) {
+	    	 if(timerA < 2.0) { //grab &eat a tote
 	    		 eatTote();
 	    	 }
-	    	 if(timerA > 2.0 && timerA < 4.0) {
+	    	 if(timerA > 2.0 && timerA < 4.0) {  // move forward to next tote
 	    		 stopEatTote();
+	    		 lifterLeft.setPosition(middle);
+	    		 lifterFollower.setPosition(middle);
 	    		 hkDrive.mecanumDrive_Cartesian(0, 1, 0, 0);
 	    	 }
 	    	 if(timerA > 4.0 && timerA < 6.0){
@@ -445,7 +447,7 @@ public class Robot extends SampleRobot {
 		//manipStick
 		if(   SINGLE_CONTROLLER == false   ){
 			if (manipStick.getRawButton(OPEN_BUTTON)==true ){  //if holding the LB button, 	        
-			 armRelay.set(Relay.Value.kForward);                 
+				armRelay.set(Relay.Value.kForward);                 
 			}
 			
 			if (manipStick.getRawButton(CLOSE_BUTTON)==true ){  //if holding the RB button, 
@@ -807,10 +809,13 @@ public class Robot extends SampleRobot {
 	
 	//AUTO GRAB METHODS
 	public void closeGrab(){
+		armRelay.set(Relay.Value.kReverse);
 		
 	}
 	
 	public void openGrab(){
+		armRelay.set(Relay.Value.kForward);
+		
 		
 	}
 	
