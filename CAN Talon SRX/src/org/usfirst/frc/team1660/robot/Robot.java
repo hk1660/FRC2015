@@ -223,25 +223,10 @@ public class Robot extends SampleRobot {
 		 SmartDashboard.putNumber("match time",timerA);
 		  
 	     if(currentStrategy == 1) {
-	    	 
-	    	 if(timerA < 2.0) { //grab &eat a tote
-	    		 eatTote();
-	    	 }
-	    	 if(timerA > 2.0 && timerA < 4.0) {  // move forward to next tote
-	    		 stopEatTote();
-	    		 lifterLeft.setPosition(middle);
-	    		 lifterFollower.setPosition(middle);
-	    		 hkDrive.mecanumDrive_Cartesian(0, 1, 0, 0);
-	    	 }
-	    	 if(timerA > 4.0 && timerA < 6.0){
-	    		 hkDrive.mecanumDrive_Cartesian(0,0,0,0);
-	    	 }
-	    	 
-	    	 
-	    	 
-	    	 
-	    	 
-	    	  
+	    	runOneToteStrategy(timerAuto); 
+
+	     
+}  
 	    	 //lifterLeft.setPosition(middle);
 	    	 //lifterFollower.setPosition(middle);
 	    	// hkDrive.mecanumDrive_Cartesian(0, 1, 0, 0);
@@ -253,7 +238,7 @@ public class Robot extends SampleRobot {
 	    	 
 	    	 //Timer.delay(5);
 	    	 //hkDrive.mecanumDrive_Cartesian(0, 0, 0, imu.getYaw());	 
-	     }
+	     
 	    /* else if(currentStrategy == 2){	
 	    	 eatTote();
 	    	 Timer.delay(5);
@@ -829,10 +814,33 @@ public class Robot extends SampleRobot {
 	public void autoDrop() {
 		autoLift(bottom);
 	}
-	
+    public void runOneToteStrategy(Timer timerAuto){
+    	double timerA = timerAuto.get();
+		 SmartDashboard.putNumber("match time",timerA);
+	    	 
+	    	 
+	    	 if(timerA < 1.5) { //grab &eat a tote
+	    		 closeGrab();
+	    	 }
+	    	 if(timerA > 1.5 && timerA < 2.5) {  // move forward to next tote
+	    		 eatTote();
+	    	 }
+	         if(timerA > 2.5 && timerA < 3.0) { 
+	    		 stopEatTote();
+	         }
+	         if(timerA > 3.0 && timerA < 5.00) {
+	    		 lifterLeft.setPosition(middle);
+	    		 lifterFollower.setPosition(middle);
+	         }	
+	         if(timerA > 5.00 && timerA < 6.00) {
+	    		 hkDrive.mecanumDrive_Cartesian(0, 1, 0, 0);
+	    	 }
+	    	
+    }
 
 	
 }
+
 
 
 
