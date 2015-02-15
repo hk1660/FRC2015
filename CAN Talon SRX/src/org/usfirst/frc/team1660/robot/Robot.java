@@ -185,7 +185,7 @@ public class Robot extends SampleRobot {
   
   public void robotInit() {
 	    airC.set(Relay.Value.kForward);
-	    SINGLE_CONTROLLER = true; //start by using only 1 xbox controller, touch button to add manipStick
+	   // SINGLE_CONTROLLER = true; //start by using only 1 xbox controller, touch button to add manipStick
 	    
 	  	hkDrive     = new RobotDrive(frontleft, backleft, frontright, backright);
 	    driverStick = new Joystick(1);
@@ -200,10 +200,10 @@ public class Robot extends SampleRobot {
         SmartDashboard.putData("startingPosition", startingPosition);
         
         strategy = new SendableChooser();
-        strategy.addDefault("Strategy 1", new Integer(1));
+        strategy.addDefault("Move forward only", new Integer(1));
         strategy.addObject("Strategy 2", new Integer(2));
         strategy.addObject("Strategy 3", new Integer(3));
-        SmartDashboard.putData("strategy", strategy);
+        SmartDashboard.putData("strategy selector", strategy);
 
         
 	}  
@@ -217,16 +217,21 @@ public class Robot extends SampleRobot {
 	 timerAuto.start(); 
 	 int currentStrategy = (int) strategy.getSelected(); 
 	  
-	 while(isAutonomous() && isEnabled() && timerAuto.get() < autoLength){ 
+	 while(isAutonomous() && isEnabled()){ 
 	  
+		 lifterLimitPosition();
 		 double timerA = timerAuto.get();
 		 SmartDashboard.putNumber("match time",timerA);
 		  
 	     if(currentStrategy == 1) {
-	    	runOneToteStrategy(timerAuto); 
-
-	     
-}  
+	    	runAutoStrategy_GoForwardOnly(timerAuto); 
+	     }  
+	     if(currentStrategy == 2) {
+		    	testStrategy(timerAuto); 
+		     } 
+	     if(currentStrategy == 3) {
+	    	 oneToteStrategy(timerAuto);
+	     }
 	    	 //lifterLeft.setPosition(middle);
 	    	 //lifterFollower.setPosition(middle);
 	    	// hkDrive.mecanumDrive_Cartesian(0, 1, 0, 0);
@@ -286,24 +291,27 @@ public class Robot extends SampleRobot {
   
 	     }  */
 	  }
-	  stopEatTote();
-	  stopDrive();
   }
   
   
   public void operatorControl() {
-	  
+	  int counter1 = 0;
     while (isOperatorControl() && isEnabled()) {
-
-    	checkSingle();
+    	SmartDashboard.putNumber(  "Single Controller Mode",     counter1++);
+    	//checkSingle();
     	//checkComp();
-    	checkCompPressureSwitch();
-    	processGyro();
+
     	checkJoystick();	
+    	processGyro();
+    	
+    	checkCompPressureSwitch();
     	checkEatingButtons();
        	checkArms();
-    	checkLiftingButtons();
-    	adjustLiftingPID();
+       	
+		//lifterLimitPosition();
+       	checkLiftingButtons();
+    	//adjustLiftingPID();
+    	
     	//checkRumble();
     	
        	Timer.delay(0.01);  // Note that the CANTalon only receives updates every
@@ -327,17 +335,18 @@ public class Robot extends SampleRobot {
 
   
 	//SWITCH OFF BETWEEN SINGLE OR DUAL CONTROLLERS
-	 public void checkSingle(){
-		SmartDashboard.putBoolean(  "Single Controller Mode",     SINGLE_CONTROLLER);
-		if (driverStick.getRawButton(CHANGE_BUTTON)==true ){  //if holding the Y button
+  static int counter = 0;
+	/* public void checkSingle(){
+		if (driverStick.getRawButton(CHANGE_BUTTON)){  //if holding the Y button
 			SINGLE_CONTROLLER = false;
 		}
 		
-		if(manipStick.getRawButton(CHANGE_BUTTON)==true){ //if holding the Y button
+		if(manipStick.getRawButton(CHANGE_BUTTON)){ //if holding the Y button
 			SINGLE_CONTROLLER = true;
 		}	
+		SmartDashboard.putNumber(  "Single Controller Mode",     counter++);
 	 }
-	
+	*/
 	  
 	//MOVE DRIVETRAIN WITH XBOX360 JOYSTICKS -Matthew
 	public void checkJoystick()
@@ -345,9 +354,9 @@ public class Robot extends SampleRobot {
 		
 		 double threshold = 0.11;
 		 
-		 double strafe = driverStick.getRawAxis(STRAFE_AXIS) ; // right and left on the left thumb stick?
-		 double moveValue = driverStick.getRawAxis(FORWARDBACKWARD_AXIS);// up and down on left thumb stick?
-		 double rotateValue = driverStick.getRawAxis(TURNSIDEWAYS_AXIS);// right and left on right thumb stick
+		 double strafe = squareInput(driverStick.getRawAxis(STRAFE_AXIS)) ; // right and left on the left thumb stick?
+		 double moveValue = squareInput(driverStick.getRawAxis(FORWARDBACKWARD_AXIS));// up and down on left thumb stick?
+		 double rotateValue = squareInput(driverStick.getRawAxis(TURNSIDEWAYS_AXIS));// right and left on right thumb stick
 		
 		 //KILL GHOST MOTORS -Matthew & Dianne
 		if(moveValue > threshold*-1 && moveValue < threshold) {
@@ -397,11 +406,12 @@ public class Robot extends SampleRobot {
 				else{
 					eaterRight.set(0.0);
 					eaterLeft.set(0.0);
-					SmartDashboard.putString(  "Eater",        "Hungry");
+					SmartDashboard.putString(  "Eater",        "Hungry1");
 				}
 		}
 		
 		else{
+			SmartDashboard.putString(  "Eater",        "Disabled");
 			/**
 			 	//driverStick  jamesey
 			if (driverStick.getRawButton(EAT_BUTTON)==true && hitC == false && hitT == false ){
@@ -528,59 +538,8 @@ public class Robot extends SampleRobot {
 	
 	//LIFT WITH XBOX360 -Adonis & Jatara\ 
 	public void checkLiftingButtons(){
-	
-		//ENCODERS SETUP
-	    lifterLeft.changeControlMode(CANTalon.ControlMode.Position);
-		lifterFollower.changeControlMode(CANTalon.ControlMode.Position);
-		lifterLeft.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-		lifterFollower.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-		//lifterFollower.reverseSensor(true);
-		
-		SmartDashboard.putNumber("encLspeed", lifterLeft.getEncVelocity());
-		SmartDashboard.putNumber("encRspeed", lifterFollower.getEncVelocity());
-		SmartDashboard.putNumber("currentCommandL", lifterLeft.getPosition());
-		SmartDashboard.putNumber("currentCommandR", lifterFollower.getPosition());
-	
-		//LIMIT SWITCH SETUP
-		boolean hitTL = limitTopL.get();
-		boolean hitBL = limitBottomL.get();
-		boolean hitTR = limitTopR.get();
-		boolean hitBR = limitBottomR.get();
-		
-		SmartDashboard.putBoolean(  "limitBottomR",     hitBR);
-		SmartDashboard.putBoolean(  "limitTopR",        hitTR);
-		SmartDashboard.putBoolean(  "limitBottomL",     hitBL);
-		SmartDashboard.putBoolean(  "limitTopL",        hitTL);	
-		
-		//PID SETUP
-		lifterLeft.setPID(LP, LI, LD);
-		lifterFollower.setPID(FP, FI, FD);
-		
-		//CHANGE PID VALUES IF OUT OF SYNC -Matthew
-		double syncPfactor = 0.6;
-		double syncIfactor = 1.0;
-		double syncDfactor = 1.0;
-		int errorThresh = 700; //about a half inch
-		
-		int leftEncPosition = Math.abs( lifterLeft.getEncPosition() );
-		int followerEncPosition = Math.abs( lifterFollower.getEncPosition() );
-		SmartDashboard.putNumber("encLposition", leftEncPosition);
-		SmartDashboard.putNumber("encRposition", followerEncPosition);
-		SmartDashboard.putNumber("leftLifterError", lifterLeft.getClosedLoopError());
-		SmartDashboard.putNumber("followerLifterError", lifterFollower.getClosedLoopError());
-		SmartDashboard.putNumber("current Output LEFT", lifterLeft.getOutputCurrent());
-		SmartDashboard.putNumber("current Output RIGHT", lifterFollower.getOutputCurrent());
-		 
-		if(leftEncPosition - followerEncPosition   > errorThresh) {
-			lifterFollower.setPID(FP*syncPfactor, FI*syncIfactor, FD*syncDfactor);
-		}
-		else if(followerEncPosition -leftEncPosition  > errorThresh) {
-			lifterLeft.setPID(LP*syncPfactor, LI*syncIfactor, LD*syncDfactor);
-		}
-		else {
-			lifterFollower.setPID(FP, FI, FD);
-			lifterLeft.setPID(LP, LI, LD);
-		}
+	    adjustLiftingPID();
+		lifterLimitPosition();
 		
 		/*	//MANUAL CONTROL OF POSITION
 			SmartDashboard.putNumber("LifterAxis", manipStick.getRawAxis(1));
@@ -629,30 +588,6 @@ public class Robot extends SampleRobot {
 				SmartDashboard.putString("Lifter Status", "LIMIT");
 			}
 			
-			//LIMIT SWITCH-BASED COMMMANDS
-			if(hitBR==false){		//RESET THE RIGHT ENCODER when hit bottom
-				lifterFollower.setPosition(0);
-				//lifterFollower.set(0);
-				lifterFollower.set(-low);
-				SmartDashboard.putString("Lifter Status", "ResetRight");
-			}
-			if(hitBL==false) {		//RESET THE LEFT ENCODER when hit bottom
-				lifterLeft.setPosition(0);
-				//lifterLeft.set(0);
-				lifterLeft.set(low);
-				SmartDashboard.putString("Lifter Status", "ResetLeft");
-			}
-			if(hitTR==false){  //move Right side to 26.5" if hit the top
-				lifterFollower.set(top);
-				lifterFollower.setPosition(high);
-				SmartDashboard.putString("Lifter Status", "TopRightReset");			
-			}
-			if(hitTL==false){  //move Left side to 26.5" if hit the top
-				lifterLeft.set(top);
-				lifterLeft.setPosition(high);
-				SmartDashboard.putString("Lifter Status", "TopLeftReset");
-			}
-		
 			//DISABLE & ENABLE COMMANDS
 			if(manipStick.getRawAxis(3)>0.1) { //right trigger disables the motors
 				lifterLeft.disable();
@@ -774,11 +709,31 @@ public class Robot extends SampleRobot {
 	}
 	
 	public void stopDrive() {
-		frontleft.set(0);
-		backleft.set(0);
-		backright.set(0);
-		backleft.set(0);	
+		hkDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 	}
+	
+	public void goForwardAtSpeed(double speed) {
+		hkDrive.mecanumDrive_Cartesian(0, 0, speed, 0);
+	}
+	
+	public void strafeLeftAtSpeed(double speed) {
+		hkDrive.mecanumDrive_Cartesian(-speed, 0, 0, 0);
+	}
+	
+	public void strafeRightAtSpeed(double speed) {
+		hkDrive.mecanumDrive_Cartesian(speed, 0, 0, 0);
+	}
+	
+	public void turnLeftAtSpeed(double speed) {
+		hkDrive.mecanumDrive_Cartesian(0, -speed, 0, 0);
+	}
+	
+	public void turnRightAtSpeed(double speed) {
+		hkDrive.mecanumDrive_Cartesian(0, speed, 0, 0);
+	}
+	
+	
+	
 	
 	
 	//AUTO EAT METHOD -Adonis & Jatara
@@ -812,8 +767,85 @@ public class Robot extends SampleRobot {
 	}
 	
 	public void autoDrop() {
+	
 		autoLift(bottom);
 	}
+	public void runAutoStrategy_GoForwardOnly(Timer timerAuto) {
+		double timerA = timerAuto.get();
+		if(timerA < 2) {
+			goForwardAtSpeed(0.3);
+		}
+		else{
+			stopDrive();
+		}
+	}
+	public void toteStrategy(Timer timerAuto) {
+		double timerA = timerAuto.get();
+		if(timerA < 2) {
+			eatTote();
+			closeGrab();
+	    }
+		if(timerA > 2 && timerA < 4) {
+			stopEatTote();
+			openGrab();
+			autoLift(middle);
+		}
+		if(timerA > 4 && timerA < 6) {
+			turnRightAtSpeed(0.3);
+		}
+		if(timerA > 6 && timerA < 8) {
+			goForwardAtSpeed(0.3);
+		}
+		if(timerA > 8 && timerA < 10) {
+			autoLift(low);
+		}
+		
+	}
+	public void oneToteStrategy(Timer timerAuto) {
+		double timerA = timerAuto.get();
+		
+		if(timerA > 0.5 && timerA < 2.0){
+			autoLift(middle);
+		}
+		if(timerA > 2.0 && timerA < 4.0){
+		    strafeLeftAtSpeed(0.3);
+		}
+		/*
+		if(timerA > 4 && timerA < 6){
+			goForwardAtSpeed(0.3);
+		}
+		if(timerA > 6 && timerA < 8){
+			turnRightAtSpeed(0.3);
+		}
+		if(timerA > 8 && timerA < 10){
+			goForwardAtSpeed(0.3);
+		}
+		if(timerA > 10 && timerA < 12){
+			autoLift(low);
+		}
+		*/
+	}
+	
+	public void testStrategy(Timer timerAuto) {
+		double timerA = timerAuto.get();
+	
+		if(timerA < 2) {
+			turnRightAtSpeed(0.3);
+		}
+		if(timerA > 2 && timerA < 4) {
+			turnLeftAtSpeed(0.3);
+		}
+		if(timerA > 4 && timerA < 6) {
+			strafeRightAtSpeed(0.3);
+		}
+		if(timerA > 6 && timerA < 8) {
+			strafeLeftAtSpeed(0.3);
+		}
+		else{
+			stopDrive();
+		}
+	}
+	
     public void runOneToteStrategy(Timer timerAuto){
     	double timerA = timerAuto.get();
 		 SmartDashboard.putNumber("match time",timerA);
@@ -837,8 +869,101 @@ public class Robot extends SampleRobot {
 	    	 }
 	    	
     }
+    public double squareInput(double x) {
+      if(x > 0 ) {
+    	return Math.pow(x, 2);
+      }
+      else{
+    	  return -1*Math.pow(x, 2); 
+      }
+    }
 
 	
+    
+    public void lifterLimitPosition(){
+
+		//ENCODERS SETUP
+	    lifterLeft.changeControlMode(CANTalon.ControlMode.Position);
+		lifterFollower.changeControlMode(CANTalon.ControlMode.Position);
+		lifterLeft.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+		lifterFollower.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+		//lifterFollower.reverseSensor(true);
+		
+		SmartDashboard.putNumber("encLspeed", lifterLeft.getEncVelocity());
+		SmartDashboard.putNumber("encRspeed", lifterFollower.getEncVelocity());
+		SmartDashboard.putNumber("currentCommandL", lifterLeft.getPosition());
+		SmartDashboard.putNumber("currentCommandR", lifterFollower.getPosition());
+	
+		//LIMIT SWITCH SETUP
+		boolean hitTL = limitTopL.get();
+		boolean hitBL = limitBottomL.get();
+		boolean hitTR = limitTopR.get();
+		boolean hitBR = limitBottomR.get();
+		
+		SmartDashboard.putBoolean(  "limitBottomR",     hitBR);
+		SmartDashboard.putBoolean(  "limitTopR",        hitTR);
+		SmartDashboard.putBoolean(  "limitBottomL",     hitBL);
+		SmartDashboard.putBoolean(  "limitTopL",        hitTL);	
+		
+		//PID SETUP
+		lifterLeft.setPID(LP, LI, LD);
+		lifterFollower.setPID(FP, FI, FD);
+		
+		//CHANGE PID VALUES IF OUT OF SYNC -Matthew
+		double syncPfactor = 0.6;
+		double syncIfactor = 1.0;
+		double syncDfactor = 1.0;
+		int errorThresh = 700; //about a half inch
+		
+		int leftEncPosition = Math.abs( lifterLeft.getEncPosition() );
+		int followerEncPosition = Math.abs( lifterFollower.getEncPosition() );
+		SmartDashboard.putNumber("encLposition", leftEncPosition);
+		SmartDashboard.putNumber("encRposition", followerEncPosition);
+		SmartDashboard.putNumber("leftLifterError", lifterLeft.getClosedLoopError());
+		SmartDashboard.putNumber("followerLifterError", lifterFollower.getClosedLoopError());
+		SmartDashboard.putNumber("current Output LEFT", lifterLeft.getOutputCurrent());
+		SmartDashboard.putNumber("current Output RIGHT", lifterFollower.getOutputCurrent());
+		 
+		if(leftEncPosition - followerEncPosition   > errorThresh) {
+			lifterFollower.setPID(FP*syncPfactor, FI*syncIfactor, FD*syncDfactor);
+		}
+		else if(followerEncPosition -leftEncPosition  > errorThresh) {
+			lifterLeft.setPID(LP*syncPfactor, LI*syncIfactor, LD*syncDfactor);
+		}
+		else {
+			lifterFollower.setPID(FP, FI, FD);
+			lifterLeft.setPID(LP, LI, LD);
+		}
+		
+
+		//LIMIT SWITCH-BASED COMMMANDS
+		if(hitBR==false){		//RESET THE RIGHT ENCODER when hit bottom
+			lifterFollower.setPosition(0);
+			//lifterFollower.set(0);
+			lifterFollower.set(-low);
+			SmartDashboard.putString("Lifter Status", "ResetRight");
+		}
+		if(hitBL==false) {		//RESET THE LEFT ENCODER when hit bottom
+			lifterLeft.setPosition(0);
+			//lifterLeft.set(0);
+			lifterLeft.set(low);
+			SmartDashboard.putString("Lifter Status", "ResetLeft");
+		}
+		if(hitTR==false){  //move Right side to 26.5" if hit the top
+			lifterFollower.set(top);
+			lifterFollower.setPosition(high);
+			SmartDashboard.putString("Lifter Status", "TopRightReset");			
+		}
+		if(hitTL==false){  //move Left side to 26.5" if hit the top
+			lifterLeft.set(top);
+			lifterLeft.setPosition(high);
+			SmartDashboard.putString("Lifter Status", "TopLeftReset");
+		}
+	
+		
+    }
+
+
 }
 
 
