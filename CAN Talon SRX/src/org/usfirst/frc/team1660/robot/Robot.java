@@ -54,6 +54,7 @@ public class Robot extends SampleRobot {
   //DECLARING RELAYS
   Relay armRelay;
   Relay airC;
+  Relay relayFlame;
   
   //DECLARING SENSORS
   DigitalInput pressureSwitch;
@@ -152,6 +153,7 @@ public class Robot extends SampleRobot {
       eaterLeft  = new Talon(2);
       airC  = new Relay(0);
       armRelay  = new Relay(1);
+      relayFlame = new Relay(2);
 
       //INITIALIZE SENSORS    
       pressureSwitch = new DigitalInput(0);
@@ -237,8 +239,7 @@ public class Robot extends SampleRobot {
     while (isOperatorControl() && isEnabled()) {
     	
     	SmartDashboard.putNumber(  "Op Control Counter",     counter1++);
-       	
-    	checkCompPressureSwitch();
+       	checkFlame();
     	processGyro();
      	checkJoystick();	
     	checkEatingButtons();
@@ -343,15 +344,18 @@ public class Robot extends SampleRobot {
 		SmartDashboard.putBoolean("hit tote?", hitT);
 		//SmartDashboard.putBoolean("hit container?", hitC);
 			
-		if (manipStick.getRawButton(EAT_BUTTON)==true && hitT == true )
+		if (manipStick.getRawButton(EAT_BUTTON)==true )
 		{  //if holding the A button, then eater motor spin	
-			eatTote();
+	        eaterRight.set(eatSpeed);
+	        eaterLeft.set(-eatSpeed);
 			SmartDashboard.putString(  "Eater",        "Eating");
 		}
 		else if (manipStick.getRawButton(SPIT_BUTTON)==true ){  //if holding the X button, 
 			//then eater motor, spin backwards	
+	
 			eaterRight.set(-spitSpeed);
 			eaterLeft.set(spitSpeed);
+			closeGrab();
 			SmartDashboard.putString(  "Eater",        "Spitting");
 		}
 		else{
@@ -425,7 +429,7 @@ public class Robot extends SampleRobot {
 	public void checkLiftingButtons(){
 	    
 		lifterLimitPosition();
-		adjustLiftingPID();
+		autoStackPrepButton();
 	
 		//DPAD POSITION CONTROL COMMANDS
 		SmartDashboard.putNumber("DPAD Value", manipStick.getPOV(DPAD));
@@ -433,18 +437,21 @@ public class Robot extends SampleRobot {
 		if(manipStick.getPOV(DPAD) == 180) {  //go to 0.5" from bottom
 			lifterLeft.set(low);
 			lifterFollower.set(-low);
+			openGrab();
 			SmartDashboard.putString("Lifter Status", "Down");
 			manualLiftCount = 0;
 		}
 		if(manipStick.getPOV(DPAD) == 270) { //go to 14.5" from bottom
 			lifterLeft.set(middle);
 			lifterFollower.set(-middle);
+			openGrab();
 			SmartDashboard.putString("Lifter Status", "Middle");
 			manualLiftCount = 0;
 		}		
 		if(manipStick.getPOV(DPAD) == 0) { //go to 26.5" from bottom
 		    lifterLeft.set(high);
 			lifterFollower.set(-high);
+			openGrab();
 			SmartDashboard.putString("Lifter Status", "High");
 			manualLiftCount = 0;
 		}
@@ -542,27 +549,13 @@ public class Robot extends SampleRobot {
   }
 	
 	
-	//MANUALLY ADJUST VALUES OF P, I, D
-	public void adjustLiftingPID(){
+	//Auto stack Prep
+	public void autoStackPrepButton(){
 	
 		if(manipStick.getRawButton(2)==true){
-			LP = LP + 0.01;
-			FP = FP + 0.01;
-			SmartDashboard.putNumber("PValue", LP);
+			autoStackPrep();
 		}
-	/*
-		if(manipStick.getRawButton(8)==true){
-			LI = LI + 0.01;
-			FI = FI + 0.01;
-			SmartDashboard.putNumber("IValue", LI);	
-		}
-	
-		if(manipStick.getRawButton(7)==true){
-			LD = LD + 0.01;
-			FD = FD + 0.01;
-			SmartDashboard.putNumber("DValue", LD);
-		}
-	*/
+
 	} 
 
 	
@@ -570,7 +563,7 @@ public class Robot extends SampleRobot {
 	public void checkLiftingAxis(){
 		
 		lifterLimitPosition();
-		adjustLiftingPID();
+		autoStackPrepButton();
 	
 		SmartDashboard.putNumber("LifterAxis", manipStick.getRawAxis(1));
 		
@@ -636,11 +629,11 @@ public class Robot extends SampleRobot {
 	}
 	
 	public void turnLeftAtSpeed(double speed) {
-		hkDrive.mecanumDrive_Cartesian(0, -speed, 0, 0);
+		hkDrive.mecanumDrive_Cartesian(0, speed, 0, 0);
 	}
 	
 	public void turnRightAtSpeed(double speed) {
-		hkDrive.mecanumDrive_Cartesian(0, speed, 0, 0);
+		hkDrive.mecanumDrive_Cartesian(0, -speed, 0, 0);
 	}
 	
 	public void stopDrive() {
@@ -661,11 +654,11 @@ public class Robot extends SampleRobot {
 	
 	//AUTO GRAB METHODS
 	public void closeGrab(){
-		armRelay.set(Relay.Value.kReverse);		
+		armRelay.set(Relay.Value.kForward);		
 	}
 	
 	public void openGrab(){
-		armRelay.set(Relay.Value.kForward);
+		armRelay.set(Relay.Value.kReverse);
 	}
 	
 	
@@ -720,21 +713,25 @@ public class Robot extends SampleRobot {
 		if(timerA > 0.5 && timerA < 2.0){
 			autoLift(middle);
 		}
-		if(timerA > 2.0 && timerA < 4.0){
-		    strafeLeftAtSpeed(0.3);
+		if(timerA > 2.0 && timerA < 3.5){
+		    strafeLeftAtSpeed(0.6);
 		}
 		
-		if(timerA > 4 && timerA < 6){
-			goForwardAtSpeed(0.3);
+		if(timerA > 3.5 && timerA < 4.3){
+			turnRightAtSpeed(0.6);
+
 		}
-		if(timerA > 6 && timerA < 8){
-			turnRightAtSpeed(0.3);
+		if(timerA > 4.3 && timerA < 5.9){
+		    strafeLeftAtSpeed(0.6);
+
+					}
+		if(timerA > 5.9 && timerA < 8.9){
+			goForwardAtSpeed(0.6);
 		}
-		if(timerA > 8 && timerA < 10){
-			goForwardAtSpeed(0.3);
-		}
-		if(timerA > 10 && timerA < 12){
+		if(timerA > 8.9 && timerA < 12.1){
+			stopDrive();
 			autoLift(low);
+			
 		}
 		
 	}
@@ -780,6 +777,50 @@ public class Robot extends SampleRobot {
     		 hkDrive.mecanumDrive_Cartesian(0, 1, 0, 0);
     	 }	    	
     }
+    
+    public void autoStackPrep() {
+    	lifterLeft.setPosition(middle);
+    	lifterFollower.setPosition(middle);
+    	openGrab();
+    }
+    
+    public void autoStackEat() {
+    
+    	Timer timerB = new Timer();
+    	timerB.start();
+    	if(timerB.get() < 2) {
+    	eaterRight.set(eatSpeed);
+    	eaterLeft.set(-eatSpeed);
+    	}
+    	if(timerB.get() < 2 && timerB.get() > 1) {
+    		closeGrab();
+        }
+    	if(timerB.get() > 2 && timerB.get() < 4) {
+    		lifterLeft.setPosition(middle);
+    		lifterFollower.setPosition(middle);
+    	}
+    }
+    
+    public void autoStackSpit() {
+    	eaterRight.set(-spitSpeed);
+    	eaterLeft.set(spitSpeed);
+    	
+    }
 
+    public void checkFlame() {
+
+    	int FLAME_ONBUTTON = 8;
+    	int FLAME_OFFBUTTON = 7;
+    	if(manipStick.getRawButton(FLAME_OFFBUTTON) == true) {
+    		relayFlame.set(Relay.Value.kReverse);
+    	}
+    	if(manipStick.getRawButton(FLAME_ONBUTTON) == true) {
+    		relayFlame.set(Relay.Value.kForward);                 
+    	}
+    	
+    	
+    	
+    }
+    		
     
 }
