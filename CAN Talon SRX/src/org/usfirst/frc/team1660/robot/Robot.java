@@ -162,7 +162,7 @@ public class Robot extends SampleRobot {
       //INITIALIZE SENSORS    
       pressureSwitch = new DigitalInput(0);
       limitTote = new DigitalInput (1);
-      limitContainer = new DigitalInput (2);
+      //limitContainer = new DigitalInput (2);
       limitBottomR = new DigitalInput (3);
       limitTopR = new DigitalInput (4);
       limitBottomL = new DigitalInput (5);
@@ -198,8 +198,10 @@ public class Robot extends SampleRobot {
         
         strategy = new SendableChooser();
         strategy.addDefault("Move forward only", new Integer(1));
-        strategy.addObject("Strategy 2", new Integer(2));
-        strategy.addObject("Strategy 3", new Integer(3));
+        strategy.addObject("Carry tote", new Integer(2));
+        strategy.addObject("Push Container", new Integer(3));
+        strategy.addObject("Carry tote and container", new Integer(4));
+        strategy.addObject("Three tote stack", new Integer(5));
         SmartDashboard.putData("strategy selector", strategy);
      
 	}  
@@ -223,10 +225,14 @@ public class Robot extends SampleRobot {
 	    	runAutoStrategy_GoForwardOnly(timerAuto); 
 	     }  
 	     if(currentStrategy == 2) {
-		    	testStrategy(timerAuto); 
+	    	 onlyToteStrategy(timerAuto); 
 		     } 
 	     if(currentStrategy == 3) {
+	    	 onlyContainerStrategy(timerAuto);
+	     }
+	     if(currentStrategy == 4) {
 	    	 oneToteStrategy(timerAuto);
+	    	 
 	     }
 	    	
 	     if(Timer.getMatchTime() > 15 ) {
@@ -249,7 +255,7 @@ public class Robot extends SampleRobot {
     	checkEatingButtons();
        	checkArms();
        	checkLiftingButtons();
-       	autoStackButtons();
+       	//autoStackButtons();
        	//checkLiftingAxis();
     	//checkRumble();
     	
@@ -333,10 +339,10 @@ public class Robot extends SampleRobot {
 
 	public double squareInput(double x) {
         if(x > 0 ) {
-      	return Math.pow(x, 2);
+      	return Math.pow(x, 4);
         }
         else{
-      	  return -1*Math.pow(x, 2); 
+      	  return -1*Math.pow(x, 4); 
         }
       }
 
@@ -353,6 +359,7 @@ public class Robot extends SampleRobot {
 		{  //if holding the A button, then eater motor spin	
 	        eaterRight.set(eatSpeed);
 	        eaterLeft.set(-eatSpeed);
+	        closeGrab();
 			SmartDashboard.putString(  "Eater",        "Eating");
 		}
 		else if (manipStick.getRawButton(SPIT_BUTTON)==true ){  //if holding the X button, 
@@ -374,11 +381,11 @@ public class Robot extends SampleRobot {
 	//INTAKE WITH XBOX360 jamesey 
 	public void checkArms(){
 		if (manipStick.getRawButton(OPEN_BUTTON)==true ){  //if holding the LB button, 	        
-			armRelay.set(Relay.Value.kForward);                 
+			openGrab();               
 		}
 		
 		if (manipStick.getRawButton(CLOSE_BUTTON)==true ){  //if holding the RB button, 
-		armRelay.set(Relay.Value.kReverse);
+		    closeGrab();
 		}
 	}
 	
@@ -485,7 +492,7 @@ public class Robot extends SampleRobot {
 			lifterFollower.disable();
 			SmartDashboard.putString("Lifter Status", "Disabled");
 		}
-		if(manipStick.getRawAxis(4)>0.1){ //left trigger renables lift motors
+		if(manipStick.getRawAxis(4)>0.2){ //left trigger re-enables lift motors
 			lifterLeft.enableControl();
 			lifterFollower.enableControl();	
 			SmartDashboard.putString("Lifter Status", "Enabled");
@@ -647,6 +654,9 @@ public class Robot extends SampleRobot {
 	public void stopDrive() {
 		hkDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 	}
+	public void turnAndStrafe(double strafeSpeed, double turnSpeed) {
+		hkDrive.mecanumDrive_Cartesian(-strafeSpeed, -turnSpeed, 0, 0);
+	}
 	
 	
 	//AUTO EAT METHOD -Adonis & Jatara
@@ -717,29 +727,22 @@ public class Robot extends SampleRobot {
 	public void oneToteStrategy(Timer timerAuto) {
 		double timerA = timerAuto.get();
 		
-		if(timerA > 0.5 && timerA < 2.0){
+		if(timerA > 0 && timerA < 2.0){
+			relayFlame.set(Relay.Value.kReverse);         
 			autoLift(middle);
 		}
-		if(timerA > 2.0 && timerA < 3.5){
-		    strafeLeftAtSpeed(0.6);
+		if(timerA > 2.0 && timerA < 4){
+		    turnAndStrafe(0.6,0.3);
 		}
-		
-		if(timerA > 3.5 && timerA < 4.3){
-			turnRightAtSpeed(0.6);
-
-		}
-		if(timerA > 4.3 && timerA < 5.9){
-		    strafeLeftAtSpeed(0.6);
-
-					}
-		if(timerA > 5.9 && timerA < 8.9){
+		if(timerA > 7 && timerA < 10){
 			goForwardAtSpeed(0.6);
 		}
-		if(timerA > 8.9 && timerA < 12.1){
+		if(timerA > 10 && timerA < 12){
+			relayFlame.set(Relay.Value.kForward);
 			stopDrive();
-			autoLift(low);	
+			
 		}
-		
+	
 	}
 	
 	public void testStrategy(Timer timerAuto) {
@@ -881,8 +884,92 @@ public class Robot extends SampleRobot {
   		autoStackSpit();
 
 
-  	} 
 
+  	} 
+   public void threeStackStrategyNoContainersInTheWay(Timer timerAuto){
+	   double timerA = timerAuto.get();
+	   timerAuto.start();
+	   if(timerA < 0.5){
+		   //lifterLeft.setPositon
+	   }
+   }
+  	
+   public void threeStackStrategyTwo(Timer timerAuto) {
+	   double timerA = timerAuto.get();
+	   timerAuto.start();
+	   if(timerA < 0.5 && timerA < 2 ) {
+		   lifterLeft.setPosition(middle);
+		   lifterFollower.setPosition(middle);
+		   strafeLeftAtSpeed(0.4);
+	   }
+	   if(timerA > 2 && timerA < 3) {
+		   goForwardAtSpeed(0.4);
+	   }
+	   if(timerA > 3 && timerA < 4.5) {
+		   strafeRightAtSpeed(0.4);
+	   }
+	   if(timerA > 4.5 && timerA < 5.5) {
+		   goForwardAtSpeed(0.4);
+	   }
+	   if(timerA > 5.5 && timerA < 6.5) {
+		  lifterLeft.setPosition(low);
+		  lifterFollower.setPosition(low);
+	   }
+	   if(timerA > 6.5 && timerA < 8) {
+		  lifterLeft.setPosition(high);
+		  lifterFollower.setPosition(high);
+		  strafeLeftAtSpeed(0.4);
+	   }
+	   if(timerA > 8 && timerA < 9) {
+		   goForwardAtSpeed(0.4);
+	   }
+	   if(timerA > 9 && timerA < 10) {
+		   strafeRightAtSpeed(0.4);   
+	   }
+	   if(timerA > 10 && timerA < 11) {
+		   goForwardAtSpeed(0.4);
+	   }
+	   if(timerA > 11 && timerA < 12){
+		   lifterLeft.setPosition(low);
+		   lifterFollower.setPosition(low);
+	   }
+	   if(timerA > 12 && timerA < 13){
+		   lifterLeft.setPosition(middle);
+		   lifterFollower.setPosition(middle);
+	   }
+	   if(timerA > 13 && timerA < 15) {
+		   strafeLeftAtSpeed(0.4);
+	   }
+	   if(timerA > 15 && timerA < 16) {
+		  lifterLeft.setPosition(low);
+		  lifterFollower.setPosition(low);
+		  goForwardAtSpeed(-0.4);
+	   }
+	   
+   }
+   
+   public void onlyToteStrategy(Timer timerAuto) {
+	  double  timerA =  timerAuto.get();
+	  if(timerA < 0.5  ) {
+		  lifterLeft.setPosition(middle);
+		  lifterFollower.setPosition(middle);
+       }
+	  if(timerA > 0.5 && timerA < 1.5) {
+		  turnRightAtSpeed(0.5);
+	  }
+	  if(timerA > 1.5 && timerA < 5.5) {
+		  goForwardAtSpeed(0.4);
+	  }
+	  
+}
+   
+   public void onlyContainerStrategy(Timer timerAuto) {
+	   double timerA = timerAuto.get();
+	   if(timerA > 0 && timerA < 5) {
+		   goForwardAtSpeed(0.4);
+	   }
+	   
+   }
     		
     
 }
