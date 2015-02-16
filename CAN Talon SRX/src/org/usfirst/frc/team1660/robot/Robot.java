@@ -106,8 +106,10 @@ public class Robot extends SampleRobot {
   int currentL = 0;
   int currentR = 0;
 
+  //BOOLEANS
   boolean rumbleToggle = false;
   public boolean CONTROLLER_TOGGLE = false; //variable to toggle controller settings
+  public boolean autoStackSpitFlag = false;
   
   //SmartDashboard objects
   SendableChooser startingPosition;
@@ -245,6 +247,7 @@ public class Robot extends SampleRobot {
     	checkEatingButtons();
        	checkArms();
        	checkLiftingButtons();
+       	autoStackButtons();
        	//checkLiftingAxis();
     	//checkRumble();
     	
@@ -429,8 +432,7 @@ public class Robot extends SampleRobot {
 	public void checkLiftingButtons(){
 	    
 		lifterLimitPosition();
-		autoStackPrepButton();
-	
+		
 		//DPAD POSITION CONTROL COMMANDS
 		SmartDashboard.putNumber("DPAD Value", manipStick.getPOV(DPAD));
 		
@@ -549,12 +551,26 @@ public class Robot extends SampleRobot {
   }
 	
 	
-	//Auto stack Prep
-	public void autoStackPrepButton(){
+	//AUTO STACK BUTTONS
+	public void autoStackButtons(){
 	
-		if(manipStick.getRawButton(2)==true){
+		//prep on A
+		if(manipStick.getRawButton(1)==true){
 			autoStackPrep();
 		}
+
+		//eat on B
+		
+		
+		//lift on X
+		
+		
+		//spit on Y
+		if(manipStick.getRawButton(4)==true){
+			autoStackSpitFlag=true;
+		}
+		autoStackSpit();
+
 
 	} 
 
@@ -563,7 +579,6 @@ public class Robot extends SampleRobot {
 	public void checkLiftingAxis(){
 		
 		lifterLimitPosition();
-		autoStackPrepButton();
 	
 		SmartDashboard.putNumber("LifterAxis", manipStick.getRawAxis(1));
 		
@@ -704,7 +719,6 @@ public class Robot extends SampleRobot {
 		if(timerA > 8 && timerA < 10) {
 			autoLift(low);
 		}
-		
 	}
 	
 	public void oneToteStrategy(Timer timerAuto) {
@@ -730,8 +744,7 @@ public class Robot extends SampleRobot {
 		}
 		if(timerA > 8.9 && timerA < 12.1){
 			stopDrive();
-			autoLift(low);
-			
+			autoLift(low);	
 		}
 		
 	}
@@ -778,6 +791,7 @@ public class Robot extends SampleRobot {
     	 }	    	
     }
     
+    //AUTO COMBO METHODS
     public void autoStackPrep() {
     	lifterLeft.setPosition(middle);
     	lifterFollower.setPosition(middle);
@@ -788,38 +802,63 @@ public class Robot extends SampleRobot {
     
     	Timer timerB = new Timer();
     	timerB.start();
-    	if(timerB.get() < 2) {
+    	
+    	if(timerB.get() < 0.5) {
     	eaterRight.set(eatSpeed);
     	eaterLeft.set(-eatSpeed);
     	}
-    	if(timerB.get() < 2 && timerB.get() > 1) {
+    	if(timerB.get() > 0.5 && timerB.get() < 1) {
     		closeGrab();
         }
-    	if(timerB.get() > 2 && timerB.get() < 4) {
+    }
+  
+    public void autoStackPickUp(){
+    	Timer timerC = new Timer();
+    	timerC.start();
+
+    	if(timerC.get() > 0 && timerC.get() < 1) {
+    		lifterLeft.setPosition(low);
+    		lifterFollower.setPosition(low);
+    	}    	
+    	
+    	if(timerC.get() > 2 && timerC.get() < 3) {
     		lifterLeft.setPosition(middle);
     		lifterFollower.setPosition(middle);
     	}
     }
     
     public void autoStackSpit() {
-    	eaterRight.set(-spitSpeed);
-    	eaterLeft.set(spitSpeed);
-    	
+    	Timer timerD = new Timer();
+    	timerD.start();
+
+    	if(timerD.get() > 0 && timerD.get() < 1 && autoStackSpitFlag == true) {	    	
+	    	openGrab();
+	    	lifterLeft.setPosition(low);
+			lifterFollower.setPosition(low);
+    	}
+    	if(timerD.get()>2 && timerD.get()<4 && autoStackSpitFlag == true){
+    		eaterRight.set(-spitSpeed);
+        	eaterLeft.set(spitSpeed);	
+        	closeGrab();
+    	}
+    	if(timerD.get()>4 && autoStackSpitFlag == true){
+    		timerD.reset();
+    		autoStackSpitFlag = false;
+    	}    	
     }
 
+  
+    //DRAGON FLAME IF TOTE IS UPRIGHT
     public void checkFlame() {
 
-    	int FLAME_ONBUTTON = 8;
-    	int FLAME_OFFBUTTON = 7;
-    	if(manipStick.getRawButton(FLAME_OFFBUTTON) == true) {
+    	int FLAME_ONBUTTON = 5;
+    	int FLAME_OFFBUTTON = 6;
+    	if(driverStick.getRawButton(FLAME_OFFBUTTON) == true) {
     		relayFlame.set(Relay.Value.kReverse);
     	}
     	if(manipStick.getRawButton(FLAME_ONBUTTON) == true) {
     		relayFlame.set(Relay.Value.kForward);                 
-    	}
-    	
-    	
-    	
+    	}	
     }
     		
     
