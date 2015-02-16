@@ -109,6 +109,8 @@ public class Robot extends SampleRobot {
   //BOOLEANS
   boolean rumbleToggle = false;
   public boolean CONTROLLER_TOGGLE = false; //variable to toggle controller settings
+  public boolean autoStackEatFlag= false;
+  public boolean autoStackPickUpFlag= false;
   public boolean autoStackSpitFlag = false;
   
   //SmartDashboard objects
@@ -414,7 +416,21 @@ public class Robot extends SampleRobot {
 			}
 		} 
 	}	
+
 	
+    //DRAGON FLAME IF TOTE IS UPRIGHT
+    public void checkFlame() {
+
+    	int FLAME_ONBUTTON = 5;
+    	int FLAME_OFFBUTTON = 6;
+    	if(driverStick.getRawButton(FLAME_OFFBUTTON) == true) {
+    		relayFlame.set(Relay.Value.kReverse);
+    	}
+    	if(driverStick.getRawButton(FLAME_ONBUTTON) == true) {
+    		relayFlame.set(Relay.Value.kForward);                 
+    	}	
+    }
+
 	//SWITCH OFF BETWEEN CONTROLLER SETTINGS
 	public void checkToggle(){
 		if (driverStick.getRawButton(CHANGE_BUTTON)){  //if holding the Y button
@@ -550,29 +566,6 @@ public class Robot extends SampleRobot {
 		}
   }
 	
-	
-	//AUTO STACK BUTTONS
-	public void autoStackButtons(){
-	
-		//prep on A
-		if(manipStick.getRawButton(1)==true){
-			autoStackPrep();
-		}
-
-		//eat on B
-		
-		
-		//lift on X
-		
-		
-		//spit on Y
-		if(manipStick.getRawButton(4)==true){
-			autoStackSpitFlag=true;
-		}
-		autoStackSpit();
-
-
-	} 
 
 	
 	//MANUAL CONTROL OF POSITION
@@ -803,28 +796,40 @@ public class Robot extends SampleRobot {
     	Timer timerB = new Timer();
     	timerB.start();
     	
-    	if(timerB.get() < 0.5) {
+    	if(timerB.get() < 0.5 && autoStackEatFlag== true) {
     	eaterRight.set(eatSpeed);
     	eaterLeft.set(-eatSpeed);
     	}
-    	if(timerB.get() > 0.5 && timerB.get() < 1) {
+    	if(timerB.get() > 0.5 && timerB.get() < 1 && autoStackEatFlag== true) {
     		closeGrab();
         }
+    	if(limitTote.get()==true && autoStackEatFlag== true ){
+    		stopEatTote();
+    	}
+    	if(timerB.get()>3 && autoStackEatFlag == true){
+    		stopEatTote();
+    		timerB.reset();
+    		autoStackEatFlag = false;
+    	}        	
     }
   
     public void autoStackPickUp(){
     	Timer timerC = new Timer();
     	timerC.start();
 
-    	if(timerC.get() > 0 && timerC.get() < 1) {
+    	if(timerC.get() > 0 && timerC.get() < 1 && autoStackPickUpFlag== true) {
     		lifterLeft.setPosition(low);
     		lifterFollower.setPosition(low);
-    	}    	
-    	
-    	if(timerC.get() > 2 && timerC.get() < 3) {
+    		openGrab();
+    	}   	
+    	if(timerC.get() > 2 && timerC.get() < 2.5 && autoStackPickUpFlag== true) {
     		lifterLeft.setPosition(middle);
     		lifterFollower.setPosition(middle);
     	}
+    	if(timerC.get()>2.5 && autoStackPickUpFlag == true){
+    		timerC.reset();
+    		autoStackPickUpFlag = false;
+    	}    	
     }
     
     public void autoStackSpit() {
@@ -842,24 +847,42 @@ public class Robot extends SampleRobot {
         	closeGrab();
     	}
     	if(timerD.get()>4 && autoStackSpitFlag == true){
+    		stopEatTote();
     		timerD.reset();
     		autoStackSpitFlag = false;
     	}    	
     }
 
-  
-    //DRAGON FLAME IF TOTE IS UPRIGHT
-    public void checkFlame() {
 
-    	int FLAME_ONBUTTON = 5;
-    	int FLAME_OFFBUTTON = 6;
-    	if(driverStick.getRawButton(FLAME_OFFBUTTON) == true) {
-    		relayFlame.set(Relay.Value.kReverse);
-    	}
-    	if(manipStick.getRawButton(FLAME_ONBUTTON) == true) {
-    		relayFlame.set(Relay.Value.kForward);                 
-    	}	
-    }
+  //AUTO STACK BUTTONS
+  	public void autoStackButtons(){
+  	
+  		//prep on A
+  		if(manipStick.getRawButton(1)==true){
+  			autoStackPrep();
+  		}
+
+  		//eat on B
+  		if (manipStick.getRawButton(2)==true){
+  			autoStackEatFlag=true;
+  		}
+  		autoStackEat();
+  		
+  		//lift on X
+  		if (manipStick.getRawButton(3)==true){
+  			autoStackPickUpFlag= true;
+  		}
+  		autoStackPickUp();
+  		
+  		//spit on Y
+  		if(manipStick.getRawButton(4)==true){
+  			autoStackSpitFlag=true;
+  		}
+  		autoStackSpit();
+
+
+  	} 
+
     		
     
 }
