@@ -255,6 +255,7 @@ public class Robot extends SampleRobot {
     	checkEatingButtons();
        	checkArms();
        	checkLiftingButtons();
+       	checkCompPressureSwitch();
        	//autoStackButtons();
        	//checkLiftingAxis();
     	//checkRumble();
@@ -367,7 +368,7 @@ public class Robot extends SampleRobot {
 	
 			eaterRight.set(-spitSpeed);
 			eaterLeft.set(spitSpeed);
-			closeGrab();
+			openGrab();
 			SmartDashboard.putString(  "Eater",        "Spitting");
 		}
 		else{
