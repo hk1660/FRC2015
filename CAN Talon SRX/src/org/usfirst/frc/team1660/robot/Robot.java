@@ -79,21 +79,21 @@ public class Robot extends SampleRobot {
   
   //EATING VARIABLES
   double eatSpeed=0.75;
-  double spitSpeed=0.25;
-  double liftSpeed=0.40;
+  double spitSpeed=0.50;
+  double liftSpeed=0.30;
   
   //SET PID VALUES
-  double LP = 0.600;
-  double LI = 0.000;
+  double LP = 0.8;
+  double LI = 0.0;
   double LD = 0.0;
-  double FP = 0.600;
-  double FI = 0.000;
+  double FP = 0.8;
+  double FI = 0.0;
   double FD = 0.0;
   
   //LIFTING VARIABLES
-  double P = 0.60;
-  double I = 0.00;
-  double D = 0.00;
+  double P = 0.8;
+  double I = 0.0;
+  double D = 0.0;
   
   int bottom = 0;
   int low = 1480/2;
@@ -368,7 +368,7 @@ public class Robot extends SampleRobot {
 	
 			eaterRight.set(-spitSpeed);
 			eaterLeft.set(spitSpeed);
-			openGrab();
+			closeGrab();
 			SmartDashboard.putString(  "Eater",        "Spitting");
 		}
 		else{
@@ -489,8 +489,8 @@ public class Robot extends SampleRobot {
 		
 		//DISABLE & ENABLE COMMANDS
 		if(manipStick.getRawAxis(3)>0.1) { //right trigger disables the motors
-			lifterLeft.disable();
-			lifterFollower.disable();
+			lifterLeft.disableControl();
+			lifterFollower.disableControl();
 			SmartDashboard.putString("Lifter Status", "Disabled");
 		}
 		if(manipStick.getRawAxis(4)>0.2){ //left trigger re-enables lift motors
@@ -780,8 +780,8 @@ public class Robot extends SampleRobot {
     		 stopEatTote();
          }
          if(timerA > 3.0 && timerA < 5.00) {
-    		 lifterLeft.setPosition(middle);
-    		 lifterFollower.setPosition(middle);
+    		 lifterLeft.set(middle);
+    		 lifterFollower.set(middle);
          }	
          if(timerA > 5.00 && timerA < 6.00) {
     		 hkDrive.mecanumDrive_Cartesian(0, 1, 0, 0);
@@ -790,12 +790,12 @@ public class Robot extends SampleRobot {
     
     //AUTO COMBO METHODS
     public void autoStackPrep() {
-    	lifterLeft.setPosition(middle);
-    	lifterFollower.setPosition(middle);
-    	openGrab();
+    	lifterLeft.set(middle);
+    	lifterFollower.set(middle);
+    	//openGrab();
     }
     
-    public void autoStackEat() {
+    public void autoStackEat() {  //A BUTT
     
     	Timer timerB = new Timer();
     	timerB.start();
@@ -822,13 +822,13 @@ public class Robot extends SampleRobot {
     	timerC.start();
 
     	if(timerC.get() > 0 && timerC.get() < 1 && autoStackPickUpFlag== true) {
-    		lifterLeft.setPosition(low);
-    		lifterFollower.setPosition(low);
-    		openGrab();
+    		lifterLeft.set(low);
+    		lifterFollower.set(low);
+    		//openGrab();
     	}   	
     	if(timerC.get() > 2 && timerC.get() < 2.5 && autoStackPickUpFlag== true) {
-    		lifterLeft.setPosition(middle);
-    		lifterFollower.setPosition(middle);
+    		lifterLeft.set(middle);
+    		lifterFollower.set(middle);
     	}
     	if(timerC.get()>2.5 && autoStackPickUpFlag == true){
     		timerC.reset();
@@ -836,21 +836,23 @@ public class Robot extends SampleRobot {
     	}    	
     }
     
-    public void autoStackSpit() {
+    public void autoStackSpit() {  //X
     	Timer timerD = new Timer();
     	timerD.start();
-
+ /*
     	if(timerD.get() > 0 && timerD.get() < 1 && autoStackSpitFlag == true) {	    	
-	    	openGrab();
+	    	
 	    	lifterLeft.setPosition(low);
 			lifterFollower.setPosition(low);
-    	}
-    	if(timerD.get()>2 && timerD.get()<4 && autoStackSpitFlag == true){
+    	}*/
+    	if(timerD.get()>0 && timerD.get()<2 && autoStackSpitFlag == true){
     		eaterRight.set(-spitSpeed);
         	eaterLeft.set(spitSpeed);	
         	closeGrab();
     	}
-    	if(timerD.get()>4 && autoStackSpitFlag == true){
+    	if(timerD.get()>2 && autoStackSpitFlag == true){
+    		
+    		//openGrab();
     		stopEatTote();
     		timerD.reset();
     		autoStackSpitFlag = false;
@@ -861,26 +863,30 @@ public class Robot extends SampleRobot {
   //AUTO STACK BUTTONS
   	public void autoStackButtons(){
   	
-  		//prep on A
+  		//prep on 
   		if(manipStick.getRawButton(1)==true){
   			autoStackPrep();
+  			SmartDashboard.putBoolean("A button", manipStick.getRawButton(1));
   		}
 
-  		//eat on B
+  		//eat on A
   		if (manipStick.getRawButton(2)==true){
   			autoStackEatFlag=true;
+  			SmartDashboard.putBoolean("B Button", manipStick.getRawButton(2));
   		}
   		autoStackEat();
   		
-  		//lift on X
+  		//lift on 
   		if (manipStick.getRawButton(3)==true){
   			autoStackPickUpFlag= true;
+  			SmartDashboard.putBoolean("X Button", manipStick.getRawButton(3));
   		}
   		autoStackPickUp();
   		
-  		//spit on Y
+  		//spit on X
   		if(manipStick.getRawButton(4)==true){
   			autoStackSpitFlag=true;
+  			SmartDashboard.putBoolean("Y Button", manipStick.getRawButton(4));
   		}
   		autoStackSpit();
 
