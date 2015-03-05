@@ -176,7 +176,7 @@ public class Robot extends SampleRobot {
 /////////////////////////////////////////
   
   public void robotInit() {
-	    
+	    imu.zeroYaw();
 	  	hkDrive     = new RobotDrive(frontleft, backleft, frontright, backright);
 	    driverStick = new Joystick(1);
 	    manipStick  = new Joystick(2);
@@ -232,9 +232,10 @@ public class Robot extends SampleRobot {
 	     }
 	     if(currentStrategy == 4) {
 	    	 oneToteStrategy(timerAuto);
-	    	 
 	     }
-	    	
+	     if(currentStartegy == 5) {
+	    	 threeToteStrategyNoContainersInTheWay(timerAuto);
+	     }
 	     if(Timer.getMatchTime() > 15 ) {
     		 stopDrive();
     		 stopEatTote();
@@ -334,7 +335,7 @@ public class Robot extends SampleRobot {
 		SmartDashboard.putNumber(  "rotate",        rotateValue);
 		SmartDashboard.putNumber(  "Strafe",        strafe);
 	    //Below is right order, Internet(wpi) wrong
-		hkDrive.mecanumDrive_Cartesian( strafe, -rotateValue, -moveValue, 0); //imu.getYaw()
+		hkDrive.mecanumDrive_Cartesian( strafe, -rotateValue, -moveValue, imu.getYaw()); //imu.getYaw()
 		//HKdriveClassObject.doMecanum(x,moveValue,rotateValue); 
 	}
 
@@ -897,7 +898,42 @@ public class Robot extends SampleRobot {
 	   double timerA = timerAuto.get();
 	   timerAuto.start();
 	   if(timerA < 0.5){
-		   //lifterLeft.setPositon
+		   lifterLeft.set(low);
+		   lifterFollower.set(low);
+	   }
+	   if(timerA > 0.5 && timerA < 2.5){
+		  lifterLeft.set(high);
+		  lifterFollower.set(high);
+		  goForwardAtSpeed(0.3);
+	   }
+	   if(timerA > 2.5 && timerA < 3.5){
+		   lifterLeft.set(low);
+		   lifterFollower.set(low);
+	   }
+	   if(timerA > 3.5 && timerA < 4.5){
+		   lifterLeft.set(high);
+		   lifterFollower.set(high);
+	   }
+	   if(timerA > 4.5 && timerA < 6.5){
+		   goForwardAtSpeed(03);	
+	   }
+	   if(timerA > 6.5 && timerA < 7.5){
+		   lifterLeft.set(low);
+		   lifterFollower.set(low);
+	   }
+	   if(timerA > 7.5 && timerA < 8.5){
+		   lifterLeft.set(high);
+		   lifterFollower.set(high);
+	   }
+	   if( timerA > 8.5 && timerA < 9){
+		   turnLeftAtSpeed(0.4);
+	   }
+	   if(timerA > 9 && timerA < 11){
+		   goForwardAtSpeed(0.5);
+	   }
+	   if(timerA > 11 && timerA < 12){
+		   lifterLeft.set(low);
+		   lifterFollower.set(low);
 	   }
    }
   	
@@ -912,6 +948,7 @@ public class Robot extends SampleRobot {
 	   if(timerA > 2 && timerA < 3) {
 		   goForwardAtSpeed(0.4);
 	   }
+	   
 	   if(timerA > 3 && timerA < 4.5) {
 		   strafeRightAtSpeed(0.4);
 	   }
