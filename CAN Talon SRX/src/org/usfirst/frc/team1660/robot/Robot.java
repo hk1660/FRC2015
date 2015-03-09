@@ -66,7 +66,8 @@ public class Robot extends SampleRobot {
   DigitalInput limitBottomL;
   
   //DECLARING TIMERS
-  Timer rumbleTimer;
+  public Timer rumbleTimer = new Timer();
+  
     
   //NAVX GYRO CODE
   IMUAdvanced imu;      //IMU imu;  // Alternatively, use IMUAdvanced for advanced features
@@ -107,7 +108,7 @@ public class Robot extends SampleRobot {
   int currentR = 0;
 
   //BOOLEANS
-  boolean rumbleToggle = false;
+  public boolean rumbleFlag = false;
   public boolean CONTROLLER_TOGGLE = false; //variable to toggle controller settings
   public boolean autoStackEatFlag= false;
   public boolean autoStackPickUpFlag= false;
@@ -176,6 +177,7 @@ public class Robot extends SampleRobot {
 /////////////////////////////////////////
   
   public void robotInit() {
+	    rumbleTimer.start();
 	    imu.zeroYaw();
 	  	hkDrive     = new RobotDrive(frontleft, backleft, frontright, backright);
 	    driverStick = new Joystick(1);
@@ -233,8 +235,8 @@ public class Robot extends SampleRobot {
 	     if(currentStrategy == 4) {
 	    	 oneToteStrategy(timerAuto);
 	     }
-	     if(currentStartegy == 5) {
-	    	 threeToteStrategyNoContainersInTheWay(timerAuto);
+	     if(currentStrategy == 5) {
+	    	 threeStackStrategyNoContainersInTheWay(timerAuto);
 	     }
 	     if(Timer.getMatchTime() > 15 ) {
     		 stopDrive();
@@ -259,7 +261,7 @@ public class Robot extends SampleRobot {
        	checkCompPressureSwitch();
        	//autoStackButtons();
        	//checkLiftingAxis();
-    	//checkRumble();
+    	checkRumble(rumbleTimer);
     	
        	Timer.delay(0.01);  // Note that the CANTalon only receives updates every
                             // 10ms, so updating more quickly would not gain you anything.
@@ -606,29 +608,33 @@ public class Robot extends SampleRobot {
 	
 	
 	//RUMBLE WHEN CAPTURING A TOTE
-	 public void checkRumble(){
-		 
+	 public void checkRumble(Timer rumbleTimer) {
+
+		 double timerR = rumbleTimer.get();
 		 double rumbleLength = 2.0;  //seconds for rumble	
-		 rumbleTimer.start();
-		 boolean gotTote = limitTote.get(); //check if we have a tote
-		 SmartDashboard.putBoolean(  "Got Tote?",        gotTote);
-		 SmartDashboard.putBoolean("rumbleToggle", rumbleToggle);
-		 SmartDashboard.putNumber("rumbleTimer", rumbleTimer.get());
+		 boolean noTote = limitTote.get(); //check if we have a tote
+		 SmartDashboard.putBoolean(  "No Tote?",        noTote);
+		 SmartDashboard.putBoolean("rumbleFlag", rumbleFlag);
+		 SmartDashboard.putNumber("rumbleTimer", timerR);
+		 
+		 
 		 
 		 //do this first time
-		 if (gotTote == true && rumbleToggle == false){
-			 rumbleToggle = true;
+		 if (noTote == false && rumbleFlag == false && timerR < 4){
+			 rumbleFlag = true;
 			 rumbleTimer.reset();
 		 }
+		 
 		 //do this a while longer
-		 else if(gotTote == true && rumbleToggle==true && rumbleTimer.get()<rumbleLength){
+		 if(rumbleFlag==true && timerR < rumbleLength){
 		 manipStick.setRumble(Joystick.RumbleType.kLeftRumble,1);	 
+		 manipStick.setRumble(Joystick.RumbleType.kRightRumble,1);
 		 }	 
-		 else if(rumbleTimer.get()>rumbleLength*2){
-			 rumbleToggle = false;
+		 
+		 if(timerR > rumbleLength*2){
+			 rumbleFlag = true;
 		 }
-		 else{
-		 }	
+		 		 
 	 }
 	 
 	
